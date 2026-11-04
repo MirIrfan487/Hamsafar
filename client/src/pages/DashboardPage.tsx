@@ -6,9 +6,9 @@ export default function DashboardPage() {
   if (!user) return null
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Welcome, {user.firstName}</h1>
+        <h1 className="text-2xl font-semibold text-ink">Welcome, {user.firstName}</h1>
         <p className="mt-1 text-gray-600">This is your dashboard.</p>
       </div>
 
@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
         <div className="rounded-2xl border bg-white p-5">
           <p className="text-sm font-medium text-gray-500">Your account</p>
-          <p className="mt-1 text-gray-900">{user.email}</p>
+          <p className="mt-1 text-ink">{user.email}</p>
           <p className="mt-1 text-sm text-gray-500">Role: {user.roles.join(', ')}</p>
         </div>
       </div>

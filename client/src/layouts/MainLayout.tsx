@@ -1,14 +1,17 @@
 import { Outlet } from 'react-router'
 import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 
-// Layout for normal pages: navbar on top, page content below
+// Layout for normal pages: navbar, page, footer.
+// Pages choose their own width (the home page uses full-width sections).
 export default function MainLayout() {
   return (
-    <div className="min-h-screen bg-rose-50/40">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="flex-1">
         <Outlet />
       </main>
+      <Footer />
     </div>
   )
 }

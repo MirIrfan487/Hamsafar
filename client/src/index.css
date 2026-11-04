@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+/* Design tokens. Use them as Tailwind classes, e.g. bg-brand-600, text-ink, bg-peach-100, font-arabic */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: "Amiri", "Noto Naskh Arabic", serif;
+
+  /* Violet: main buttons and links */
+  --color-brand-50: #f5f0ff;
+  --color-brand-100: #ebe0ff;
+  --color-brand-200: #d6c2ff;
+  --color-brand-300: #b893ff;
+  --color-brand-400: #965cfa;
+  --color-brand-500: #7b33f0;
+  --color-brand-600: #5b16d9;
+  --color-brand-700: #4a11b4;
+  --color-brand-800: #3b0f8f;
+  --color-brand-900: #2f0d71;
+
+  /* Rose: search button, checkmarks, step numbers */
+  --color-accent-400: #f26b97;
+  --color-accent-500: #ec407a;
+  --color-accent-600: #d62e68;
+
+  /* Peach: soft section backgrounds */
+  --color-peach-50: #fff8f3;
+  --color-peach-100: #fdeee5;
+  --color-peach-200: #fadccb;
+
+  /* Leaves in the decorations */
+  --color-sage-300: #a9cfc0;
+  --color-sage-500: #6fa893;
+
+  /* Text and footer */
+  --color-ink: #221e33;
+  --color-ink-soft: #5d5873;
+  --color-dusk: #48437f;
+  --color-gold: #f2c14e;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+  }
+  /* Visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+}

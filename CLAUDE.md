@@ -66,6 +66,12 @@ Update-Database -Project Matrimony.Persistence -StartupProject Matrimony.Api
 - API: https://localhost:7080 (http://localhost:5080)
 - React: http://localhost:5173 (Vite proxies /api to http://localhost:5080)
 
+## Frontend design
+- Tokens in client/src/index.css (@theme): brand (violet #5b16d9) buttons/links, accent (rose #ec407a)
+  search button/checks/step numbers, peach backgrounds, sage leaves, ink text, dusk footer.
+- Fonts: Plus Jakarta Sans (all UI), Amiri (Arabic). Decorations in components/Decor.tsx (original SVGs).
+- Never show made-up statistics or reviews. Sample cards on the home page are illustrations (aria-hidden).
+
 ## Rules
 - Real working code only, no placeholders or fake logic.
 - Never trust payment status from the frontend; verify on the server.

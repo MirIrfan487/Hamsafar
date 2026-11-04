@@ -1,5 +1,13 @@
 import { Link, useNavigate } from 'react-router'
+import Logo from './Logo'
 import { useAuth } from '../hooks/useAuth'
+
+// Section links point to anchors on the home page (works from any page)
+const SECTION_LINKS = [
+  { href: '/#why', label: 'Why us' },
+  { href: '/#features', label: 'Features' },
+  { href: '/#how-it-works', label: 'How it works' },
+]
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -11,31 +19,41 @@ export default function Navbar() {
   }
 
   return (
-    <header className="border-b border-rose-100 bg-white">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link to="/" className="text-xl font-semibold text-rose-700">
-          Matrimony
-        </Link>
+    <header className="sticky top-0 z-30 border-b border-peach-100 bg-white/95 backdrop-blur">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+        <Logo />
+
+        <ul className="hidden items-center gap-7 text-sm font-medium text-ink-soft md:flex">
+          {SECTION_LINKS.map((l) => (
+            <li key={l.href}>
+              <a href={l.href} className="hover:text-brand-600">
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
 
         {user ? (
-          <div className="flex items-center gap-4 text-sm">
-            <Link to="/dashboard" className="text-gray-700 hover:text-rose-700">
-              Dashboard
+          <div className="flex items-center gap-3 text-sm">
+            <Link to="/dashboard" className="font-medium text-ink hover:text-brand-600">
+              {user.firstName || 'Dashboard'}
             </Link>
-            <span className="hidden text-gray-500 sm:inline">{user.firstName}</span>
             <button
               onClick={handleLogout}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-gray-700 hover:bg-gray-50"
+              className="rounded-full border border-gray-300 px-4 py-2 font-medium text-ink hover:bg-peach-50"
             >
               Log out
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-3 text-sm">
-            <Link to="/login" className="text-gray-700 hover:text-rose-700">
+          <div className="flex items-center gap-2 text-sm sm:gap-4">
+            <Link to="/login" className="px-2 py-2 font-medium text-ink hover:text-brand-600">
               Log in
             </Link>
-            <Link to="/register" className="rounded-lg bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-700">
+            <Link
+              to="/register"
+              className="rounded-full bg-brand-600 px-4 py-2 font-semibold text-white hover:bg-brand-700 sm:px-5"
+            >
               Register free
             </Link>
           </div>

@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import AuthLayout from '../layouts/AuthLayout'
 import FormField from '../components/FormField'
 import ErrorAlert from '../components/ErrorAlert'
@@ -30,11 +30,16 @@ const MAX_DOB = maxBirthDateForAge(18) // date picker won't allow anyone under 1
 export default function RegisterPage() {
   const { user, login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Coming from the home page search: "looking for a bride" means this person is Male, and so on
+  const lookingFor = (location.state as { lookingFor?: 'Bride' | 'Groom' } | null)?.lookingFor
+  const initialGender: Gender | '' = lookingFor === 'Bride' ? 'Male' : lookingFor === 'Groom' ? 'Female' : ''
 
   const [form, setForm] = useState({
     profileFor: 'Self' as ProfileFor,
     firstName: '',
-    gender: '' as Gender | '',
+    gender: initialGender,
     dateOfBirth: '',
     email: '',
     password: '',
@@ -110,7 +115,7 @@ export default function RegisterPage() {
             name="profileFor"
             value={form.profileFor}
             onChange={handleChange}
-            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200"
+            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
           >
             {PROFILE_FOR_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -141,7 +146,7 @@ export default function RegisterPage() {
                   checked={form.gender === g}
                   onChange={handleChange}
                   disabled={genderLocked}
-                  className="accent-rose-600"
+                  className="accent-brand-600"
                 />
                 {g}
               </label>
@@ -194,14 +199,14 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-rose-600 py-2.5 font-medium text-white hover:bg-rose-700 disabled:opacity-60"
+          className="w-full rounded-lg bg-brand-600 py-2.5 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
         >
           {submitting ? 'Creating account…' : 'Create account'}
         </button>
 
         <p className="text-center text-sm text-gray-600">
           Already registered?{' '}
-          <Link to="/login" className="font-medium text-rose-700 hover:underline">
+          <Link to="/login" className="font-medium text-brand-700 hover:underline">
             Log in
           </Link>
         </p>
