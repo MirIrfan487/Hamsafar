@@ -1,0 +1,7 @@
+# Test requests. In Visual Studio, click "Send request" above each line.
+@HostAddress = http://localhost:5080
+
+GET {{HostAddress}}/api/health
+Accept: application/json
+
+###
