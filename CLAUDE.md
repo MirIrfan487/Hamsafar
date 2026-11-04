@@ -37,8 +37,9 @@ Matrimony/                 (C:\Users\HP\source\repos\Matrimony)
         ├── components/
         ├── pages/
         ├── services/      (API calls)
-        ├── hooks/
-        └── layouts/
+        ├── hooks/         (useAuth = AuthProvider + useAuth)
+        ├── layouts/       (MainLayout with navbar, AuthLayout for login/register)
+        └── utils/
 ```
 
 ## Dev URLs
@@ -75,4 +76,13 @@ Migrations go in Data/Migrations: Add-Migration <Name> -OutputDir Data/Migration
 Delete rules: tables with two FKs to Profiles use Restrict; account deletion must
 remove those rows in code. Payments are kept (Restrict) for records.
 Money is stored as int paise.
-Next: Phase 2 — registration and login (Identity + JWT).
+Phase 2, Step 1 DONE: POST /api/auth/register (AuthService, Identity, roles Member/Admin
+seeded at startup, Draft profile created with the account, 18+ check). Enums go over JSON as text.
+Phase 2, Step 2 DONE: POST /api/auth/login (JWT, 24h, lockout after 5 tries),
+GET /api/auth/me [Authorize]. Claims: "sub" = user id, "role" = roles (MapInboundClaims=false).
+Dev JWT key in appsettings.Development.json; production uses env var Jwt__Key.
+Phase 2, Step 3 in progress: React Router (react-router v7), AuthProvider (JWT in
+localStorage key "matrimony_token", checked with /api/auth/me on load), pages: / , /login,
+/register (auto-login after register), /dashboard (ProtectedRoute), /status (health checks).
+API calls go through services/api.ts apiRequest(); errors arrive as ApiError.messages.
+Next: Phase 3 — profile creation wizard + photo upload.

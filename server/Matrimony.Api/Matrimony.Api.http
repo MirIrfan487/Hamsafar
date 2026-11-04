@@ -1,7 +1,94 @@
-# Test requests. In Visual Studio, click "Send request" above each line.
+# Test requests. In Visual Studio, click "Send request" above each request.
 @HostAddress = http://localhost:5080
 
+### Health check
 GET {{HostAddress}}/api/health
 Accept: application/json
+
+### Database check
+GET {{HostAddress}}/api/health/db
+Accept: application/json
+
+### Register — should succeed (200)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "password123",
+  "firstName": "Ayesha",
+  "profileFor": "Daughter",
+  "gender": "Female",
+  "dateOfBirth": "1999-03-15"
+}
+
+### Register same email again — should fail (400, email already taken)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "password123",
+  "firstName": "Ayesha",
+  "profileFor": "Daughter",
+  "gender": "Female",
+  "dateOfBirth": "1999-03-15"
+}
+
+### Register under 18 — should fail (400)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "young@example.com",
+  "password": "password123",
+  "firstName": "Bilal",
+  "profileFor": "Self",
+  "gender": "Male",
+  "dateOfBirth": "2012-01-01"
+}
+
+### Register with weak password — should fail (400, needs a digit)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "weak@example.com",
+  "password": "password",
+  "firstName": "Omar",
+  "profileFor": "Self",
+  "gender": "Male",
+  "dateOfBirth": "1995-07-01"
+}
+
+###
+
+### ---------- LOGIN (Phase 2, Step 2) ----------
+
+### Login with correct password — should return 200 with a token
+# @name login
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "password123"
+}
+
+### Who am I? Uses the token from the login request above — should return 200
+GET {{HostAddress}}/api/auth/me
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Who am I WITHOUT a token — should return 401
+GET {{HostAddress}}/api/auth/me
+
+### Login with wrong password — should return 401
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "wrongpass1"
+}
 
 ###
