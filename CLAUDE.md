@@ -18,20 +18,21 @@ can run and test it.
 - Payments: Razorpay (test mode during development)
 - IDE: Visual Studio 2022 (backend), VS Code (frontend)
 
-## Folder structure
+## Folder structure (Clean / Onion architecture)
 ```
-Matrimony/                 (C:\Users\HP\source\repos\Matrimony)
+Matrimony/                       (C:\Users\HP\source\repos\Matrimony)
 ├── CLAUDE.md
 ├── server/
-│   ├── Matrimony.sln      (open this in Visual Studio 2022)
-│   └── Matrimony.Api/
-│       ├── Controllers/
-│       ├── Data/          (DbContext, migrations, seed)
-│       ├── Models/        (entity classes)
-│       ├── DTOs/          (request/response shapes)
-│       ├── Services/      (business logic)
-│       ├── Hubs/          (SignalR)
-│       └── Program.cs
+│   ├── Matrimony.sln            (open this in Visual Studio 2022)
+│   └── src/
+│       ├── API/
+│       │   └── Matrimony.Api            Controllers, Extensions, Program.cs, appsettings, .http
+│       ├── Core/
+│       │   ├── Matrimony.Domain         Entities, Enums, Constants (Roles). No project references.
+│       │   └── Matrimony.Application    Services, DTOs, Interfaces (IAppDbContext, ITokenService), Common
+│       └── External/
+│           ├── Matrimony.Persistence    AppDbContext, Configurations (one per table), Migrations, Seed
+│           └── Matrimony.Infrastructure Authentication (JwtSettings, TokenService); later photo storage, Razorpay
 └── client/
     └── src/
         ├── components/
@@ -42,7 +43,26 @@ Matrimony/                 (C:\Users\HP\source\repos\Matrimony)
         └── utils/
 ```
 
+## Layer rules (dependencies point INWARDS only)
+- Domain -> nothing.  Application -> Domain.
+- Persistence -> Application.  Infrastructure -> Application.
+- Api -> Application + Persistence + Infrastructure (only to register them in Program.cs).
+- Application never uses AppDbContext or SQL Server directly: it uses IAppDbContext.
+- New outside-world service (storage, email, payments): interface in Application/Interfaces,
+  class in Infrastructure, register in Infrastructure/DependencyInjection.cs.
+- New table: entity in Domain/Entities, IEntityTypeConfiguration in Persistence/Configurations,
+  DbSet in AppDbContext AND IAppDbContext.
+- New service: Application/Services + register in Application/DependencyInjection.cs.
+
+## Migrations (Package Manager Console)
+Default project: Matrimony.Persistence, startup project: Matrimony.Api
+```
+Add-Migration <Name> -Project Matrimony.Persistence -StartupProject Matrimony.Api
+Update-Database -Project Matrimony.Persistence -StartupProject Matrimony.Api
+```
+
 ## Dev URLs
+- Swagger UI: http://localhost:5080/swagger (Authorize button = paste JWT)
 - API: https://localhost:7080 (http://localhost:5080)
 - React: http://localhost:5173 (Vite proxies /api to http://localhost:5080)
 
@@ -72,7 +92,6 @@ Phase 1, Step 2 done: EF Core + SQL Server (Server=., MatrimonyDb), migration In
 Phase 1 DONE (tested 2026-11-04). Step 3: all MVP tables — Identity tables, Profiles, ProfilePhotos,
 PartnerPreferences, Interests, Conversations, Messages, SubscriptionPlans (seeded
 PREMIUM_MONTHLY Rs 299), Subscriptions, Payments, Reports, Blocks. Migration AddCoreTables.
-Migrations go in Data/Migrations: Add-Migration <Name> -OutputDir Data/Migrations
 Delete rules: tables with two FKs to Profiles use Restrict; account deletion must
 remove those rows in code. Payments are kept (Restrict) for records.
 Money is stored as int paise.
@@ -81,8 +100,15 @@ seeded at startup, Draft profile created with the account, 18+ check). Enums go 
 Phase 2, Step 2 DONE: POST /api/auth/login (JWT, 24h, lockout after 5 tries),
 GET /api/auth/me [Authorize]. Claims: "sub" = user id, "role" = roles (MapInboundClaims=false).
 Dev JWT key in appsettings.Development.json; production uses env var Jwt__Key.
-Phase 2, Step 3 in progress: React Router (react-router v7), AuthProvider (JWT in
+Phase 2 DONE. Step 3: React Router (react-router v7), AuthProvider (JWT in
 localStorage key "matrimony_token", checked with /api/auth/me on load), pages: / , /login,
 /register (auto-login after register), /dashboard (ProtectedRoute), /status (health checks).
 API calls go through services/api.ts apiRequest(); errors arrive as ApiError.messages.
-Next: Phase 3 — profile creation wizard + photo upload.
+Phase 3, Step 1 in progress: ProfileService + ProfileController [Authorize]:
+GET/PUT /api/profile/me, PUT /api/profile/me/preferences, POST /api/profile/me/submit.
+Profile.Sect/Religiosity now nullable; family fields added (migration AddProfileFamilyDetails).
+Submit needs: City, Education, Occupation, Sect, Religiosity, AboutMe >= 30 chars, preferences.
+Editing an Approved profile -> PendingApproval (re-review); editing a Rejected one -> Draft.
+User id in controllers: User.GetUserId(). Services return ServiceResult<T>.
+Restructured to Clean/Onion architecture (old server/Matrimony.Api folder removed).
+Next: Phase 3, Step 2 — React profile wizard. Step 3 — photo upload.

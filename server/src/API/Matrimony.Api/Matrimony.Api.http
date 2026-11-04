@@ -1,0 +1,173 @@
+# Test requests. In Visual Studio, click "Send request" above each request.
+@HostAddress = http://localhost:5080
+
+### Health check
+GET {{HostAddress}}/api/health
+Accept: application/json
+
+### Database check
+GET {{HostAddress}}/api/health/db
+Accept: application/json
+
+### Register — should succeed (200)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "password123",
+  "firstName": "Ayesha",
+  "profileFor": "Daughter",
+  "gender": "Female",
+  "dateOfBirth": "1999-03-15"
+}
+
+### Register same email again — should fail (400, email already taken)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "password123",
+  "firstName": "Ayesha",
+  "profileFor": "Daughter",
+  "gender": "Female",
+  "dateOfBirth": "1999-03-15"
+}
+
+### Register under 18 — should fail (400)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "young@example.com",
+  "password": "password123",
+  "firstName": "Bilal",
+  "profileFor": "Self",
+  "gender": "Male",
+  "dateOfBirth": "2012-01-01"
+}
+
+### Register with weak password — should fail (400, needs a digit)
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "weak@example.com",
+  "password": "password",
+  "firstName": "Omar",
+  "profileFor": "Self",
+  "gender": "Male",
+  "dateOfBirth": "1995-07-01"
+}
+
+###
+
+### ---------- LOGIN (Phase 2, Step 2) ----------
+
+### Login with correct password — should return 200 with a token
+# @name login
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "password123"
+}
+
+### Who am I? Uses the token from the login request above — should return 200
+GET {{HostAddress}}/api/auth/me
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Who am I WITHOUT a token — should return 401
+GET {{HostAddress}}/api/auth/me
+
+### Login with wrong password — should return 401
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "wrongpass1"
+}
+
+###
+
+### ---------- PROFILE (Phase 3, Step 1) ----------
+### First send the "Login with correct password" request above, so {{login...}} has a token.
+
+### Get my profile — 200, see "missingFields"
+GET {{HostAddress}}/api/profile/me
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Submit too early — 400, lists what is missing
+POST {{HostAddress}}/api/profile/me/submit
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Save the full profile — 200
+PUT {{HostAddress}}/api/profile/me
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "profileFor": "Daughter",
+  "firstName": "Ayesha",
+  "lastName": "Khan",
+  "showLastName": false,
+  "gender": "Female",
+  "dateOfBirth": "1999-03-15",
+  "maritalStatus": "NeverMarried",
+  "heightCm": 160,
+  "country": "India",
+  "state": "Jammu and Kashmir",
+  "city": "Srinagar",
+  "education": "MBA",
+  "occupation": "Teacher",
+  "sect": "Sunni",
+  "religiosity": "Practicing",
+  "motherTongue": "Kashmiri",
+  "aboutMe": "Kind, family-oriented and fond of reading. Works as a teacher in Srinagar.",
+  "fatherOccupation": "Businessman",
+  "motherOccupation": "Homemaker",
+  "brothers": 1,
+  "sisters": 1,
+  "familyDetails": "Joint family, settled in Srinagar.",
+  "photoPrivacy": "AcceptedInterestsOnly"
+}
+
+### Save partner preferences — 200
+PUT {{HostAddress}}/api/profile/me/preferences
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "ageMin": 25,
+  "ageMax": 33,
+  "heightMinCm": 165,
+  "maritalStatuses": ["NeverMarried"],
+  "sects": ["Sunni", "JustMuslim"],
+  "cities": ["Srinagar", "Baramulla"],
+  "education": "Graduate",
+  "notes": "Should be willing to live in Kashmir."
+}
+
+### Bad preferences — 400 (max age below min age, unknown sect)
+PUT {{HostAddress}}/api/profile/me/preferences
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "ageMin": 30,
+  "ageMax": 25,
+  "sects": ["Unknown"]
+}
+
+### Submit for approval — 200, status becomes "PendingApproval"
+POST {{HostAddress}}/api/profile/me/submit
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Submit again — 400, already waiting for approval
+POST {{HostAddress}}/api/profile/me/submit
+Authorization: Bearer {{login.response.body.$.token}}
+
+###
