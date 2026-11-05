@@ -4,6 +4,7 @@ import ErrorAlert from '../components/ErrorAlert'
 import SecurePhoto from '../components/SecurePhoto'
 import { PhotoPlaceholder } from '../components/ProfileCard'
 import InterestActions from '../components/InterestActions'
+import SafetyActions from '../components/SafetyActions'
 import { ApiError } from '../services/api'
 import { searchApi, type ProfileDetail } from '../services/search'
 import {
@@ -192,6 +193,8 @@ export default function ProfileDetailPage() {
               {pp.notes && <p className="mt-3 whitespace-pre-line text-sm text-ink">{pp.notes}</p>}
             </Section>
           )}
+
+          {!p.isOwnProfile && <SafetyActions profileId={p.id} name={p.displayName} />}
         </div>
       </div>
     </div>

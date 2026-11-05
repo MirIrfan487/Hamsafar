@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import ErrorAlert from '../components/ErrorAlert'
+import BlockedMembers from '../components/BlockedMembers'
 import { useAuth } from '../hooks/useAuth'
+import { isAdminOnly } from '../services/auth'
 import { ApiError } from '../services/api'
 import { profileApi, type MyProfile, type ProfileStatus } from '../services/profile'
 import { interestsApi, type InterestSummary } from '../services/interests'
@@ -31,12 +33,16 @@ export default function DashboardPage() {
   const [interests, setInterests] = useState<InterestSummary | null>(null)
   const [plan, setPlan] = useState<MySubscription | null>(null)
 
+  const adminOnly = user ? isAdminOnly(user) : false
+
   useEffect(() => {
+    if (adminOnly) return
     interestsApi.summary().then(setInterests).catch(() => setInterests(null))
     paymentsApi.mine().then(setPlan).catch(() => setPlan(null))
   }, [])
 
   useEffect(() => {
+    if (adminOnly) return
     profileApi
       .getMine()
       .then(setProfile)
@@ -44,6 +50,7 @@ export default function DashboardPage() {
   }, [])
 
   if (!user) return null
+  if (adminOnly) return <Navigate to="/admin" replace />
 
   const isComplete = profile ? profile.missingFields.length === 0 : false
   const buttonText = !profile ? '' : profile.status === 'Draft' && !isComplete ? 'Complete your profile' : 'Edit profile'
@@ -146,6 +153,8 @@ export default function DashboardPage() {
           <p className="mt-1 text-ink">{user.email}</p>
           <p className="mt-1 text-sm text-gray-500">Role: {user.roles.join(', ')}</p>
         </div>
+
+        <BlockedMembers />
       </div>
     </div>
   )

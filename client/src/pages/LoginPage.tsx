@@ -17,17 +17,19 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
 
   // If ProtectedRoute sent us here, go back to that page after login
-  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard'
+  // Admins without a saved destination go to the admin panel
+  const savedFrom = (location.state as { from?: string } | null)?.from
+  const from = savedFrom ?? '/dashboard'
 
-  if (user) return <Navigate to={from} replace />
+  if (user) return <Navigate to={savedFrom ?? (user.roles.includes('Admin') ? '/admin' : '/dashboard')} replace />
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setErrors([])
     setSubmitting(true)
     try {
-      await login(email, password)
-      navigate(from, { replace: true })
+      const loggedIn = await login(email, password)
+      navigate(savedFrom ?? (loggedIn.roles.includes('Admin') ? '/admin' : from), { replace: true })
     } catch (err) {
       setErrors(err instanceof ApiError ? err.messages : ['Could not reach the server. Is the API running?'])
     } finally {

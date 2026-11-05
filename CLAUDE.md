@@ -167,4 +167,22 @@ GET /api/profiles/{id}/contact (email, phone) needs Accepted interest + CanViewC
 Razorpay keys: User Secrets of Matrimony.Api -> "Razorpay": {KeyId, KeySecret, WebhookSecret}. Never in Git.
 Frontend: /plans (PlansPage, utils/razorpay.ts loads checkout.js), dashboard plan card, chat upgrade prompt,
 "Show contact details" on connected profiles.
-Next: Phase 8 — admin panel (approve profiles/photos, reports, suspend).
+Phase 8 in progress: admin panel. AdminService + SafetyService (Application), AdminController
+([Authorize(Roles = Admin)], /api/admin: stats, profiles/pending, profiles/{id}/approve|reject {reason},
+photos/pending, photos/{id}/approve|reject {reason}, reports?status=, reports/{id}/resolve
+{outcome ActionTaken|Dismissed, note, suspendReportedMember}, members?q=, members/{userId}/suspend|unsuspend {note},
+audit) and SafetyController (POST /api/profiles/{id}/report {reason, details}, POST|DELETE /api/profiles/{id}/block,
+GET /api/blocks). Every admin action writes an AdminAuditLogs row (migration AddAdminAuditLog).
+Rules: reject needs a reason (members see the profile reason on their dashboard); an admin cannot suspend
+themselves or another admin; one open report per reporter -> reported pair. Suspended members cannot log in
+and disappear from search/interests/chat, but an already-issued JWT keeps working for other calls until it
+expires (max 24h). Fix in Phase 9 if needed (check IsSuspended in JwtBearerEvents.OnTokenValidated).
+Dev admin: "SeedAdmin" {Email, Password} in appsettings.Development.json -> SeedData.SeedAdminAsync
+(admin@matrimony.test / admin12345, no profile). Never in production. Make a real admin with SQL:
+INSERT INTO AspNetUserRoles (UserId, RoleId) SELECT u.Id, r.Id FROM AspNetUsers u, AspNetRoles r
+WHERE u.Email = '<email>' AND r.Name = 'Admin';   (then log out and in again to get a new token)
+Frontend: components/AdminRoute.tsx, pages/admin/* at /admin (Overview, Profiles, Photos, Reports,
+Members, Activity), "Admin" link in the navbar, admins land on /admin after login.
+Members: components/SafetyActions.tsx (Report / Block on /profiles/:id), components/BlockedMembers.tsx
+(dashboard, Unblock).
+Next: Phase 9 — testing and deployment (retarget to net10.0 first: .NET 9 support ends 10 Nov 2026).

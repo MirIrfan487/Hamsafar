@@ -116,6 +116,14 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("SeedSam
     await SampleProfiles.SeedAsync(app.Services);
 }
 
+// Development only: an admin login for the admin panel (see "SeedAdmin" in appsettings.Development.json)
+var seedAdminEmail = app.Configuration["SeedAdmin:Email"];
+var seedAdminPassword = app.Configuration["SeedAdmin:Password"];
+if (app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(seedAdminEmail) && !string.IsNullOrWhiteSpace(seedAdminPassword))
+{
+    await SeedData.SeedAdminAsync(app.Services, seedAdminEmail, seedAdminPassword);
+}
+
 // ---------- Request pipeline (order matters) ----------
 if (app.Environment.IsDevelopment())
 {

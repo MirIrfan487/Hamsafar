@@ -22,6 +22,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<Block> Blocks => Set<Block>();
+    public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -20,6 +20,7 @@ public interface IAppDbContext
     DbSet<Payment> Payments { get; }
     DbSet<Report> Reports { get; }
     DbSet<Block> Blocks { get; }
+    DbSet<AdminAuditLog> AdminAuditLogs { get; }
 
     DatabaseFacade Database { get; }   // for transactions and connection checks
 

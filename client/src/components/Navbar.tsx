@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router'
 import Logo from './Logo'
 import { useAuth } from '../hooks/useAuth'
 import { useChat } from '../hooks/useChat'
+import { isAdminOnly } from '../services/auth'
 
 // Section links point to anchors on the home page (works from any page)
 const SECTION_LINKS = [
@@ -37,23 +38,32 @@ export default function Navbar() {
 
         {user ? (
           <div className="flex items-center gap-3 text-sm sm:gap-4">
-            <Link to="/search" className="font-medium text-ink hover:text-brand-600">
-              Search
-            </Link>
-            <Link to="/interests" className="font-medium text-ink hover:text-brand-600">
-              Interests
-            </Link>
-            <Link to="/chat" className="flex items-center gap-1 font-medium text-ink hover:text-brand-600">
-              Messages
-              {unreadCount > 0 && (
-                <span className="rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-white" aria-label={`${unreadCount} unread`}>
-                  {unreadCount}
-                </span>
-              )}
-            </Link>
-            <Link to="/dashboard" className="font-medium text-ink hover:text-brand-600">
-              {user.firstName || 'Dashboard'}
-            </Link>
+            {user.roles.includes('Admin') && (
+              <Link to="/admin" className="rounded-full bg-brand-50 px-3 py-1 font-semibold text-brand-700 hover:bg-brand-100">
+                Admin
+              </Link>
+            )}
+            {!isAdminOnly(user) && (
+              <>
+              <Link to="/search" className="font-medium text-ink hover:text-brand-600">
+                Search
+              </Link>
+              <Link to="/interests" className="font-medium text-ink hover:text-brand-600">
+                Interests
+              </Link>
+              <Link to="/chat" className="flex items-center gap-1 font-medium text-ink hover:text-brand-600">
+                Messages
+                {unreadCount > 0 && (
+                  <span className="rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-white" aria-label={`${unreadCount} unread`}>
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+              <Link to="/dashboard" className="font-medium text-ink hover:text-brand-600">
+                {user.firstName || 'Dashboard'}
+              </Link>
+              </>
+            )}
             <button
               onClick={handleLogout}
               className="rounded-full border border-gray-300 px-4 py-2 font-medium text-ink hover:bg-peach-50"

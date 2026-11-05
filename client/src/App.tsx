@@ -12,6 +12,14 @@ import ProfileDetailPage from './pages/ProfileDetailPage'
 import InterestsPage from './pages/InterestsPage'
 import ChatPage from './pages/ChatPage'
 import PlansPage from './pages/PlansPage'
+import AdminRoute from './components/AdminRoute'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminOverviewPage from './pages/admin/AdminOverviewPage'
+import AdminProfilesPage from './pages/admin/AdminProfilesPage'
+import AdminPhotosPage from './pages/admin/AdminPhotosPage'
+import AdminReportsPage from './pages/admin/AdminReportsPage'
+import AdminMembersPage from './pages/admin/AdminMembersPage'
+import AdminActivityPage from './pages/admin/AdminActivityPage'
 
 // All pages (routes) of the app in one place
 export default function App() {
@@ -32,6 +40,18 @@ export default function App() {
           <Route path="/interests" element={<InterestsPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:conversationId" element={<ChatPage />} />
+        </Route>
+
+        {/* Admin pages (Admin role only) */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminOverviewPage />} />
+            <Route path="profiles" element={<AdminProfilesPage />} />
+            <Route path="photos" element={<AdminPhotosPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
+            <Route path="members" element={<AdminMembersPage />} />
+            <Route path="activity" element={<AdminActivityPage />} />
+          </Route>
         </Route>
       </Route>
 

@@ -8,7 +8,7 @@ import { authApi, type CurrentUser } from '../services/auth'
 interface AuthContextValue {
   user: CurrentUser | null
   loading: boolean // true while we check a saved token on page load
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<CurrentUser>
   logout: () => void
 }
 
@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await authApi.login(email, password)
     tokenStorage.set(res.token)
     setUser(res.user)
+    return res.user
   }, [])
 
   const logout = useCallback(() => {

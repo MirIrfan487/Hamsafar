@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { HubConnectionBuilder, HubConnectionState, LogLevel, type HubConnection } from '@microsoft/signalr'
 import { useAuth } from './useAuth'
+import { isAdminOnly } from '../services/auth'
 import { tokenStorage } from '../services/api'
 import { chatApi } from '../services/chat'
 
@@ -35,7 +36,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (!user) return
+    if (!user || isAdminOnly(user)) return // admin-only accounts have no chats
 
     const connection = new HubConnectionBuilder()
       .withUrl('/hubs/chat', { accessTokenFactory: () => tokenStorage.get() ?? '' })

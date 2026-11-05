@@ -20,6 +20,10 @@ export interface CurrentUser {
   roles: string[]
 }
 
+// An admin login with no member profile (like admin@matrimony.test).
+// It only uses the admin panel: no dashboard, search, interests or chat.
+export const isAdminOnly = (user: CurrentUser) => user.roles.includes('Admin') && !user.firstName
+
 export interface LoginResponse {
   token: string
   expiresAtUtc: string
