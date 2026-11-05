@@ -27,7 +27,8 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
             {
                 c.Id,
                 OtherId = c.Profile1Id == me ? c.Profile2Id : c.Profile1Id,
-                InterestAccepted = c.Interest.Status == InterestStatus.Accepted,
+                // Read the status itself; comparing inside the SELECT hits an EF Core 9.0.0 bug
+                ConnectionStatus = c.Interest.Status,
                 c.CreatedAtUtc,
                 Last = c.Messages
                     .OrderByDescending(m => m.Id)
@@ -58,7 +59,7 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
                     c.Id, cards[c.OtherId],
                     c.Last?.Body, c.Last?.SenderProfileId, c.Last?.SentAtUtc,
                     c.Unread,
-                    CanSend: c.InterestAccepted && !other.IsSuspended,
+                    CanSend: c.ConnectionStatus == InterestStatus.Accepted && !other.IsSuspended,
                     IsOnline: presence.IsOnline(other.UserId));
             })
             .ToList();
@@ -180,14 +181,15 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
                 OtherId = x.Profile1Id == me.Id ? x.Profile2Id : x.Profile1Id,
                 OtherUserId = x.Profile1Id == me.Id ? x.Profile2.UserId : x.Profile1.UserId,
                 OtherSuspended = x.Profile1Id == me.Id ? x.Profile2.User.IsSuspended : x.Profile1.User.IsSuspended,
-                InterestAccepted = x.Interest.Status == InterestStatus.Accepted
+                ConnectionStatus = x.Interest.Status   // compared below, in C# (see note above)
             })
             .FirstOrDefaultAsync();
         if (c is null) return null;
 
         if (await ProfileCards.IsBlockedAsync(db, me.Id, c.OtherId)) return null;
 
-        return new Access(me.Id, c.OtherUserId, CanSend: c.InterestAccepted && !c.OtherSuspended && !me.IsSuspended);
+        var accepted = c.ConnectionStatus == InterestStatus.Accepted;
+        return new Access(me.Id, c.OtherUserId, CanSend: accepted && !c.OtherSuspended && !me.IsSuspended);
     }
 
     private Task<int?> MyProfileIdAsync(string userId) =>
