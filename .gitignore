@@ -5,6 +5,9 @@ obj/
 *.user
 appsettings.*.local.json
 
+# Uploaded photos (user data, never commit)
+App_Data/
+
 # Node
 node_modules/
 dist/

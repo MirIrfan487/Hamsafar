@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { photosApi, type MyPhoto } from '../../services/photos'
 import type { MyProfile } from '../../services/profile'
 import {
   COUNT_OPTIONS,
@@ -45,7 +46,19 @@ function Row({ label, value }: { label: string; value: string }) {
 const listOrAny = (items: string[], options: { value: string; label: string }[]) =>
   items.length === 0 ? 'Any' : items.map((i) => labelFor(options, i)).join(', ')
 
+function photoSummary(photos: MyPhoto[] | null): string {
+  if (photos === null) return 'Loading…'
+  if (photos.length === 0) return ''
+  const waiting = photos.filter((ph) => ph.status === 'Pending').length
+  return `${photos.length} photo(s)` + (waiting > 0 ? `, ${waiting} waiting for approval` : '')
+}
+
 export default function StepReview({ profile, values: v, prefs: p, goTo }: StepReviewProps) {
+  const [photos, setPhotos] = useState<MyPhoto[] | null>(null)
+  useEffect(() => {
+    photosApi.list().then(setPhotos).catch(() => setPhotos([]))
+  }, [])
+
   return (
     <div>
       {profile.missingFields.length > 0 && (
@@ -97,6 +110,10 @@ export default function StepReview({ profile, values: v, prefs: p, goTo }: StepR
         <Row label="Brothers" value={labelFor(COUNT_OPTIONS, v.brothers)} />
         <Row label="Sisters" value={labelFor(COUNT_OPTIONS, v.sisters)} />
         <Row label="Family details" value={v.familyDetails} />
+      </Section>
+
+      <Section title="Photos" step={6} goTo={goTo}>
+        <Row label="Photos" value={photoSummary(photos)} />
       </Section>
 
       <Section title="Partner preferences" step={5} goTo={goTo}>

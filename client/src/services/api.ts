@@ -60,29 +60,39 @@ async function readErrors(res: Response): Promise<string[]> {
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  body?: unknown
+  body?: unknown // an object (sent as JSON) or FormData (for file uploads)
   auth?: boolean // true = send the saved JWT in the Authorization header
 }
 
+function authHeader(): Record<string, string> {
+  const token = tokenStorage.get()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { Accept: 'application/json' }
+  const isForm = options.body instanceof FormData
+  const headers: Record<string, string> = { Accept: 'application/json', ...(options.auth ? authHeader() : {}) }
 
-  if (options.body !== undefined) headers['Content-Type'] = 'application/json'
-
-  if (options.auth) {
-    const token = tokenStorage.get()
-    if (token) headers.Authorization = `Bearer ${token}`
-  }
+  // For FormData the browser sets Content-Type itself (with the multipart boundary)
+  if (options.body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
 
   const res = await fetch(`/api${path}`, {
     method: options.method ?? 'GET',
     headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
   })
 
   if (!res.ok) throw new ApiError(res.status, await readErrors(res))
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
+}
+
+// For images that need login: <img src> cannot send our token, so we download the file
+// with the token and show it from memory (see components/SecurePhoto.tsx)
+export async function apiBlob(path: string): Promise<Blob> {
+  const res = await fetch(`/api${path}`, { headers: authHeader() })
+  if (!res.ok) throw new ApiError(res.status, [`Request failed (${res.status})`])
+  return res.blob()
 }
 
 // ---------- Health checks (used by /status) ----------

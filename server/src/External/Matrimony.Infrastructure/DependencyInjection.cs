@@ -1,5 +1,6 @@
 using Matrimony.Application.Interfaces;
 using Matrimony.Infrastructure.Authentication;
+using Matrimony.Infrastructure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,11 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddScoped<ITokenService, TokenService>();
+
+        // Photo files on the server's disk
+        services.Configure<PhotoStorageSettings>(configuration.GetSection("PhotoStorage"));
+        services.AddSingleton<IPhotoStorage, LocalPhotoStorage>();
+
         return services;
     }
 }

@@ -171,3 +171,16 @@ POST {{HostAddress}}/api/profile/me/submit
 Authorization: Bearer {{login.response.body.$.token}}
 
 ###
+
+### ---------- PHOTOS (Phase 3, Step 3) ----------
+### Upload is easiest in Swagger (POST /api/profile/me/photos has a file picker) or in the React wizard.
+
+### My photos
+GET {{HostAddress}}/api/profile/me/photos
+Authorization: Bearer {{login.response.body.$.token}}
+
+### One photo image (change 1 to a real id from the list above)
+GET {{HostAddress}}/api/photos/1
+Authorization: Bearer {{login.response.body.$.token}}
+
+###

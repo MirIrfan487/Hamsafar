@@ -120,4 +120,11 @@ Restructured to Clean/Onion architecture (old server/Matrimony.Api folder remove
 Phase 3, Step 2 in progress: profile wizard at /profile/edit?step=1..6 (pages/ProfileWizardPage.tsx,
 components/wizard/*). Steps 1-4 save with PUT /api/profile/me, step 5 PUT /me/preferences, step 6 review +
 POST /me/submit. Form helpers in utils/profileForm.ts, labels in utils/options.ts. Dashboard shows real status.
-Next: Phase 3, Step 3 — photo upload.
+Phase 3, Step 3 in progress: photos. PhotoService (Application) + IPhotoStorage -> LocalPhotoStorage
+(Infrastructure, ImageSharp: validates, auto-orients, max 1600px, strips EXIF/GPS, saves JPEG with random
+name in App_Data/photos, NOT wwwroot). Max 6 photos, 5 MB. New photos are Pending (admin approves in Phase 8).
+Endpoints: GET/POST /api/profile/me/photos, DELETE /me/photos/{id}, PUT /me/photos/{id}/main,
+GET /api/photos/{id} (privacy check: owner/admin always; others need photo+profile Approved, no block,
+PhotoPrivacy AllMembers or an Accepted interest either way). Frontend loads images via SecurePhoto (blob + token).
+Wizard: step 6 = Photos, step 7 = Review.
+Next: Phase 4 — search with filters.

@@ -7,6 +7,7 @@ import StepLocationWork from '../components/wizard/StepLocationWork'
 import StepReligionAbout from '../components/wizard/StepReligionAbout'
 import StepFamily from '../components/wizard/StepFamily'
 import StepPreferences from '../components/wizard/StepPreferences'
+import StepPhotos from '../components/wizard/StepPhotos'
 import StepReview from '../components/wizard/StepReview'
 import { ApiError } from '../services/api'
 import { profileApi, type MyProfile } from '../services/profile'
@@ -21,15 +22,17 @@ import {
   type ProfileFormValues,
 } from '../utils/profileForm'
 
-const STEPS = ['Basic details', 'Location & work', 'Religion & about', 'Family', 'Partner preferences', 'Review & submit']
+const STEPS = ['Basic details', 'Location & work', 'Religion & about', 'Family', 'Partner preferences', 'Photos', 'Review & submit']
 const LAST = STEPS.length
 const PREFERENCES_STEP = 5
+const PHOTOS_STEP = 6 // photos save on upload, so this step just moves on
+const RELIGION_STEP = 3 // where the photo privacy setting lives
 const MAX_DOB = maxBirthDateForAge(18)
 
 const errorMessages = (err: unknown) =>
   err instanceof ApiError ? err.messages : ['Could not reach the server. Is the API running?']
 
-// /profile/edit?step=1..6 — the step is in the URL so a page refresh keeps your place
+// /profile/edit?step=1..7 — the step is in the URL so a page refresh keeps your place
 export default function ProfileWizardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const step = Math.min(Math.max(Number(searchParams.get('step')) || 1, 1), LAST)
@@ -78,6 +81,7 @@ export default function ProfileWizardPage() {
   // Save this step, then move on
   const saveAndContinue = async () => {
     if (!values || !prefs) return
+    if (step === PHOTOS_STEP) return goTo(step + 1)
     const problems = validateStep()
     setErrors(problems)
     if (problems.length > 0) return
@@ -159,7 +163,8 @@ export default function ProfileWizardPage() {
         {step === 3 && <StepReligionAbout values={values} update={updateValues} />}
         {step === 4 && <StepFamily values={values} update={updateValues} />}
         {step === 5 && <StepPreferences values={prefs} update={updatePrefs} />}
-        {step === 6 && <StepReview profile={profile} values={values} prefs={prefs} goTo={goTo} />}
+        {step === PHOTOS_STEP && <StepPhotos photoPrivacy={values.photoPrivacy} onChangePrivacy={() => goTo(RELIGION_STEP)} />}
+        {step === LAST && <StepReview profile={profile} values={values} prefs={prefs} goTo={goTo} />}
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-peach-100 pt-6">
           {step > 1 ? (
@@ -182,7 +187,7 @@ export default function ProfileWizardPage() {
               disabled={saving}
               className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
             >
-              {saving ? 'Saving…' : 'Save and continue'}
+              {saving ? 'Saving…' : step === PHOTOS_STEP ? 'Continue' : 'Save and continue'}
             </button>
           ) : isPending ? (
             <Link to="/dashboard" className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">

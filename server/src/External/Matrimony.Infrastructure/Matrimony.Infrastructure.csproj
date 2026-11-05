@@ -18,6 +18,9 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.0.1" />
+    <!-- Image processing (resize, remove GPS/EXIF data). Free under the Six Labors Split License
+         for open source and for businesses under USD 1M yearly revenue. 3.1.* = latest patched 3.1. -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.*" />
   </ItemGroup>
 
 </Project>

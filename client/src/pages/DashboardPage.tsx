@@ -60,7 +60,7 @@ export default function DashboardPage() {
               <p className="mt-2 text-xs text-ink-soft">{profile.missingFields.length} item(s) left to complete.</p>
             )}
             <Link
-              to={profile.status === 'Draft' && isComplete ? '/profile/edit?step=6' : '/profile/edit'}
+              to={profile.status === 'Draft' && isComplete ? '/profile/edit?step=7' : '/profile/edit'}
               className="mt-4 inline-block rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700"
             >
               {profile.status === 'Draft' && isComplete ? 'Review and submit' : buttonText}
