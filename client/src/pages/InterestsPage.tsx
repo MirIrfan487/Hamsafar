@@ -163,6 +163,14 @@ export default function InterestsPage() {
                       Withdraw
                     </button>
                   )}
+                  {it.status === 'Accepted' && (
+                    <Link
+                      to={`/chat?with=${p.id}`}
+                      className="rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
+                    >
+                      Message
+                    </Link>
+                  )}
                   <Link
                     to={`/profiles/${p.id}`}
                     className="rounded-full border border-gray-300 px-4 py-1.5 text-sm font-medium text-ink hover:bg-peach-50"

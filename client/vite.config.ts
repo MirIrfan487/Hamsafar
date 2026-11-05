@@ -14,6 +14,12 @@ export default defineConfig({
         target: 'http://localhost:5080',
         changeOrigin: true,
       },
+      // SignalR (live chat). ws: true lets WebSockets through the proxy.
+      '/hubs': {
+        target: 'http://localhost:5080',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })

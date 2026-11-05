@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router'
 import Logo from './Logo'
 import { useAuth } from '../hooks/useAuth'
+import { useChat } from '../hooks/useChat'
 
 // Section links point to anchors on the home page (works from any page)
 const SECTION_LINKS = [
@@ -11,6 +12,7 @@ const SECTION_LINKS = [
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { unreadCount } = useChat()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -40,6 +42,14 @@ export default function Navbar() {
             </Link>
             <Link to="/interests" className="font-medium text-ink hover:text-brand-600">
               Interests
+            </Link>
+            <Link to="/chat" className="flex items-center gap-1 font-medium text-ink hover:text-brand-600">
+              Messages
+              {unreadCount > 0 && (
+                <span className="rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-white" aria-label={`${unreadCount} unread`}>
+                  {unreadCount}
+                </span>
+              )}
             </Link>
             <Link to="/dashboard" className="font-medium text-ink hover:text-brand-600">
               {user.firstName || 'Dashboard'}

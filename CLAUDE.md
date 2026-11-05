@@ -143,4 +143,13 @@ no resend after Rejected; Withdrawn row is reused; if the other side already sen
 Accept creates a Conversation (Profile1Id < Profile2Id). ProfileDetailResponse has Interest + ViewerIsApproved.
 Shared card/privacy logic: Application/Services/ProfileCards.cs (used by search and interests).
 Frontend: components/InterestActions.tsx on /profiles/:id, pages/InterestsPage.tsx at /interests?tab=...
-Next: Phase 6 — chat (SignalR).
+Phase 6 in progress: chat. ChatService (Application) + ConversationsController: GET /api/conversations,
+GET /unread-count, GET /{id}/messages?before=, POST /{id}/messages {body}, POST /{id}/read.
+Controller pushes live events through IHubContext<ChatHub>. Hub at /hubs/chat (Api/Hubs): events
+ReceiveMessage, MessagesRead, Typing, PresenceChanged; hub method Typing(conversationId).
+JWT for the hub comes as ?access_token= (JwtBearerEvents.OnMessageReceived, only for /hubs).
+SubClaimUserIdProvider maps Clients.User(id) to the "sub" claim. PresenceTracker (in-memory, one server)
+implements IPresenceTracker. Can send only if interest Accepted, no block, nobody suspended; 30 msgs/minute.
+Frontend: @microsoft/signalr, hooks/useChat.tsx (ChatProvider: one connection, unreadCount, presence, on()),
+pages/ChatPage.tsx at /chat, /chat/:id, /chat?with=<profileId>. Vite proxies /hubs with ws: true.
+Next: Phase 7 — one paid plan with Razorpay (test mode).

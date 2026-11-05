@@ -38,9 +38,12 @@ export default function InterestActions({ profile, onChanged }: { profile: Profi
   let content: ReactNode
   if (i?.status === 'Accepted') {
     content = (
-      <p className="text-sm text-green-800">
-        <span className="font-semibold">You are connected with {name}.</span> Private chat opens in the next update.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-green-800">You are connected with {name}.</p>
+        <Link to={`/chat?with=${profile.id}`} className={primary}>
+          Send a message
+        </Link>
+      </div>
     )
   } else if (i?.status === 'Pending' && i.direction === 'Received') {
     content = (

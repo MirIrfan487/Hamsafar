@@ -12,3 +12,17 @@ export function maxBirthDateForAge(years: number): string {
   d.setFullYear(d.getFullYear() - years)
   return toDateInputValue(d)
 }
+
+// "14:05" today, "Mon" this week, "3 Nov" otherwise
+export function formatChatTime(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  const days = (now.getTime() - d.getTime()) / 86_400_000
+  if (days < 6) return d.toLocaleDateString(undefined, { weekday: 'short' })
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+}
+
+export function formatMessageTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+}
