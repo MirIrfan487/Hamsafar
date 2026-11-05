@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Matrimony.Application.Services;
 
 // Everything the logged-in user can do with THEIR OWN profile.
-public class ProfileService(IAppDbContext db)
+public class ProfileService(IAppDbContext db) : IProfileService
 {
     public const int MinAboutMeLength = 30;
 

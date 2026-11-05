@@ -32,7 +32,7 @@ export interface LoginResponse {
 
 export const authApi = {
   register: (data: RegisterData) =>
-    apiRequest<{ message: string; userId: string }>('/auth/register', { method: 'POST', body: data }),
+    apiRequest<{ message: string; userId: string }>('/auth/signup', { method: 'POST', body: data }),
 
   login: (email: string, password: string) =>
     apiRequest<LoginResponse>('/auth/login', { method: 'POST', body: { email, password } }),

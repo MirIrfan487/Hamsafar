@@ -2,12 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../hooks/useAuth'
 import { ArchRings, Bloom, Sprig } from '../components/Decor'
-
-// Surah An-Nur 24:32 — Arabic from the Shamela library; English translation by Pickthall (public domain)
-const VERSE_AR =
-  'وَأَنْكِحُوا الْأَيَامَى مِنْكُمْ وَالصَّالِحِينَ مِنْ عِبَادِكُمْ وَإِمَائِكُمْ إِنْ يَكُونُوا فُقَرَاءَ يُغْنِهِمُ اللَّهُ مِنْ فَضْلِهِ وَاللَّهُ وَاسِعٌ عَلِيمٌ'
-const VERSE_EN =
-  'And marry such of you as are solitary and the pious of your slaves and maid-servants. If they be poor, Allah will enrich them of His bounty. Allah is of ample means, Aware.'
+import { DEVELOPER, MARRIAGE_VERSE } from '../utils/verse'
 
 const TRUST_POINTS = [
   { icon: 'shield', title: 'Every profile is checked', text: 'Our team reviews each profile and photo before other members can see it.' },
@@ -44,6 +39,7 @@ export default function HomePage() {
     <>
       <Hero />
       <VerseSection />
+      <DeveloperSection />
       <ProfileSection />
       <TrustSection />
       <FeaturesSection />
@@ -146,17 +142,71 @@ function Hero() {
 
 function VerseSection() {
   return (
-    <section className="relative overflow-hidden bg-white py-20">
-      <Bloom className="pointer-events-none absolute left-[8%] top-10 w-8" petal="var(--color-sage-300)" />
-      <Sprig className="pointer-events-none absolute bottom-6 right-[6%] hidden w-36 sm:block" flip />
+    <section className="relative overflow-hidden bg-linear-to-br from-brand-900 via-brand-800 to-dusk py-20 text-white md:py-24">
+      {/* soft glows and faint flowers for depth */}
+      <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-brand-400/25 blur-3xl" aria-hidden="true" />
+      <Bloom className="pointer-events-none absolute left-[7%] top-12 w-10 opacity-25" petal="#ffffff" center="var(--color-gold)" />
+      <Bloom className="pointer-events-none absolute bottom-14 right-[8%] hidden w-14 opacity-20 sm:block" petal="#ffffff" center="var(--color-gold)" />
 
       <figure className="relative mx-auto max-w-3xl px-4 text-center">
-        <p dir="rtl" lang="ar" className="font-arabic text-3xl leading-[2.1] text-brand-800 sm:text-4xl">
-          {VERSE_AR}
+        <div className="mx-auto mb-8 flex items-center justify-center gap-3" aria-hidden="true">
+          <span className="h-px w-16 bg-linear-to-r from-transparent to-gold" />
+          <span className="h-2 w-2 rotate-45 bg-gold" />
+          <span className="h-px w-16 bg-linear-to-l from-transparent to-gold" />
+        </div>
+        <p dir="rtl" lang="ar" className="font-arabic text-3xl leading-[2.1] text-white sm:text-4xl">
+          {MARRIAGE_VERSE.arabic}
         </p>
-        <blockquote className="mx-auto mt-6 max-w-2xl text-lg italic leading-relaxed text-ink">“{VERSE_EN}”</blockquote>
-        <figcaption className="mt-4 text-sm text-ink-soft">Surah An-Nur, 24:32 (translation: Pickthall)</figcaption>
+        <blockquote className="mx-auto mt-6 max-w-2xl text-lg italic leading-relaxed text-white/85">“{MARRIAGE_VERSE.english}”</blockquote>
+        <figcaption className="mt-4 text-sm font-medium tracking-wide text-gold">{MARRIAGE_VERSE.reference}</figcaption>
       </figure>
+    </section>
+  )
+}
+
+// ---------------- Developer (own row, plain page background) ----------------
+// Photo file: client/public/developer.jpg (if it is missing, the initials are shown)
+// The quotes are the developer's own promise for the platform, not member reviews.
+// When real members give feedback (with permission), they can be added with their names.
+function DeveloperSection() {
+  const [photoFailed, setPhotoFailed] = useState(false)
+
+  return (
+    <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:grid-cols-[1.4fr_1fr] md:py-20">
+      {/* Left: quotes in a box with slightly rounded corners */}
+      <div className="order-2 rounded-xl border border-peach-200 p-6 sm:p-8 md:order-1">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">Our promise to you</p>
+        <ul className="mt-6 space-y-6">
+          {DEVELOPER.promises.map((text) => (
+            <li key={text} className="border-l-4 border-brand-200 pl-4">
+              <p className="text-lg italic leading-relaxed text-ink">“{text}”</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6 border-t border-peach-100 pt-4 text-sm font-semibold text-ink-soft">— {DEVELOPER.name}</p>
+      </div>
+
+      {/* Right: photo and name */}
+      <div className="order-1 text-center md:order-2">
+        <div className="mx-auto h-52 w-52 rounded-full bg-linear-to-br from-gold via-accent-400 to-brand-500 p-1.5 md:h-60 md:w-60">
+          {photoFailed ? (
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-brand-800 text-5xl font-bold text-white" aria-hidden="true">
+              {DEVELOPER.initials}
+            </div>
+          ) : (
+            <img
+              src={DEVELOPER.photo}
+              alt={`Photo of ${DEVELOPER.name}`}
+              onError={() => setPhotoFailed(true)}
+              className="h-full w-full rounded-full border-4 border-white object-cover"
+            />
+          )}
+        </div>
+        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">Designed and built by</p>
+        <h2 className="mt-2 text-4xl font-extrabold tracking-tight text-ink">{DEVELOPER.name}</h2>
+        <p className="mt-1 font-medium text-brand-700">Founder and sole developer</p>
+      </div>
     </section>
   )
 }

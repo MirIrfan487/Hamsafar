@@ -2,6 +2,7 @@ using System.Text.Json;
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ namespace Matrimony.Application.Services;
 //        3) VerifyAsync       -> check signature + ask Razorpay the payment status/amount -> activate
 //        4) HandleWebhookAsync -> Razorpay tells us directly (works even if the browser was closed)
 // The browser is never trusted to say "I paid".
-public class SubscriptionService(IAppDbContext db, IPaymentGateway gateway)
+public class SubscriptionService(IAppDbContext db, IPaymentGateway gateway) : ISubscriptionService
 {
     private const string Currency = "INR";
 

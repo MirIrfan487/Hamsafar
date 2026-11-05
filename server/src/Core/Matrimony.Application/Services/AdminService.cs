@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Constants;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
@@ -11,12 +12,10 @@ namespace Matrimony.Application.Services;
 
 // Admin panel: approve profiles/photos, handle reports, suspend members, view the activity log.
 // Every change writes a row to AdminAuditLogs.
-public class AdminService(IAppDbContext db, UserManager<AppUser> userManager)
+public class AdminService(IAppDbContext db, UserManager<AppUser> userManager) : IAdminService
 {
     public const int PageSize = 20;
 
-    // Who is doing the action (for the activity log)
-    public record AdminActor(string UserId, string Email);
 
     // ---------- Overview ----------
 

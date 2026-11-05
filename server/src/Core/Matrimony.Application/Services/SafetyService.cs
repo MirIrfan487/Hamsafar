@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Matrimony.Application.Services;
 
 // Members protecting themselves: report a profile to the admins, block / unblock someone.
-public class SafetyService(IAppDbContext db)
+public class SafetyService(IAppDbContext db, IProfileCardService profileCards) : ISafetyService
 {
     public async Task<ServiceResult<bool>> ReportAsync(string userId, int profileId, ReportRequest r)
     {
@@ -47,7 +48,7 @@ public class SafetyService(IAppDbContext db)
             db.Blocks.Add(new Block { BlockerProfileId = myId.Value, BlockedProfileId = profileId });
             await db.SaveChangesAsync();
         }
-        // From now on search, profile pages, interests, photos and chat all hide each other (see ProfileCards.IsBlockedAsync)
+        // From now on search, profile pages, interests, photos and chat all hide each other (see ProfileCardService.IsBlockedAsync)
         return ServiceResult<bool>.Ok(true);
     }
 
@@ -78,7 +79,7 @@ public class SafetyService(IAppDbContext db)
             .ToListAsync();
 
         return rows.Select(x => new BlockedMemberResponse(
-            x.BlockedProfileId, ProfileCards.DisplayName(x.FirstName, x.LastName, x.ShowLastName), x.City, x.CreatedAtUtc)).ToList();
+            x.BlockedProfileId, profileCards.DisplayName(x.FirstName, x.LastName, x.ShowLastName), x.City, x.CreatedAtUtc)).ToList();
     }
 
     private Task<int?> MyProfileIdAsync(string userId) =>

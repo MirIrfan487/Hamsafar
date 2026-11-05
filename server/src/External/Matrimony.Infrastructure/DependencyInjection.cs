@@ -21,7 +21,7 @@ public static class DependencyInjection
                 "for local work, or in the Jwt__Key environment variable in production.")
             .ValidateOnStart();
 
-        services.AddScoped<ITokenService, TokenService>();
+        // TokenService : ITokenService is registered in Program.cs (AddServicesFromAssemblies)
 
         // Photo files on the server's disk
         services.Configure<PhotoStorageSettings>(configuration.GetSection("PhotoStorage"));

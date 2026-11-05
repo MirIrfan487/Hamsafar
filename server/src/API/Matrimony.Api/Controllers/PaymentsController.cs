@@ -1,13 +1,13 @@
 using Matrimony.Api.Extensions;
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Matrimony.Api.Controllers;
 
 [ApiController]
-public class PaymentsController(SubscriptionService subscriptionService) : ControllerBase
+public class PaymentsController(ISubscriptionService subscriptionService) : ControllerBase
 {
     // GET /api/plans — public, for the Plans page
     [AllowAnonymous]

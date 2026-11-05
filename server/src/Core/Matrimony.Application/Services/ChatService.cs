@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ namespace Matrimony.Application.Services;
 // Private chat between connected members (a Conversation is created when an interest is accepted).
 // Rule: BOTH members need an active Premium plan to read or send messages.
 // Without it they only see that messages are waiting (unread count), never the text.
-public class ChatService(IAppDbContext db, IPresenceTracker presence)
+public class ChatService(IAppDbContext db, IPresenceTracker presence, IProfileCardService profileCards, IPremiumAccessService premiumAccess) : IChatService
 {
     public const int MaxMessageLength = 2000;
     public const int MaxMessagesPerMinute = 30;   // simple anti-spam
@@ -49,11 +50,11 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
             .ToDictionaryAsync(p => p.Id);
 
         // Who has Premium right now (me + everyone I chat with), in one query
-        var premiumUsers = await PremiumAccess.UsersWhoCanChatAsync(db, others.Values.Select(o => o.UserId).Append(userId));
+        var premiumUsers = await premiumAccess.UsersWhoCanChatAsync(others.Values.Select(o => o.UserId).Append(userId));
         var iAmPremium = premiumUsers.Contains(userId);
-        var acceptedIds = await ProfileCards.AcceptedInterestProfileIdsAsync(db, me.Value);
-        var cards = (await ProfileCards.ToRows(db.Profiles.AsNoTracking().Where(p => otherIds.Contains(p.Id))).ToListAsync())
-            .ToDictionary(x => x.Id, x => ProfileCards.ToCard(x, acceptedIds));
+        var acceptedIds = await profileCards.AcceptedInterestProfileIdsAsync(me.Value);
+        var cards = (await profileCards.ToRows(db.Profiles.AsNoTracking().Where(p => otherIds.Contains(p.Id))).ToListAsync())
+            .ToDictionary(x => x.Id, x => profileCards.ToCard(x, acceptedIds));
 
         return convs
             .Where(c => !blockedIds.Contains(c.OtherId) && cards.ContainsKey(c.OtherId))   // blocked chats disappear
@@ -215,10 +216,10 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
             .FirstOrDefaultAsync();
         if (c is null) return null;
 
-        if (await ProfileCards.IsBlockedAsync(db, me.Id, c.OtherId)) return null;
+        if (await profileCards.IsBlockedAsync(me.Id, c.OtherId)) return null;
 
         var connected = c.ConnectionStatus == InterestStatus.Accepted && !c.OtherSuspended && !me.IsSuspended;
-        var premium = await PremiumAccess.UsersWhoCanChatAsync(db, [userId, c.OtherUserId]);
+        var premium = await premiumAccess.UsersWhoCanChatAsync([userId, c.OtherUserId]);
         return new Access(me.Id, c.OtherUserId, connected, premium.Contains(userId), premium.Contains(c.OtherUserId));
     }
 

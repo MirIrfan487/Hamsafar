@@ -1,7 +1,7 @@
 using Matrimony.Api.Extensions;
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Constants;
 using Matrimony.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -13,7 +13,7 @@ namespace Matrimony.Api.Controllers;
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
 [Route("api/admin")]
-public class AdminController(AdminService adminService) : ControllerBase
+public class AdminController(IAdminService adminService) : ControllerBase
 {
     // GET /api/admin/stats
     [HttpGet("stats")]
@@ -85,7 +85,7 @@ public class AdminController(AdminService adminService) : ControllerBase
 
     // ---------- Helpers ----------
 
-    private AdminService.AdminActor Actor() =>
+    private AdminActor Actor() =>
         new(User.GetUserId() ?? string.Empty, User.FindFirst("email")?.Value ?? string.Empty);
 
     private IActionResult ToResult(ServiceResult<bool> result) =>

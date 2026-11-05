@@ -54,6 +54,22 @@ Matrimony/                       (C:\Users\HP\source\repos\Matrimony)
   DbSet in AppDbContext AND IAppDbContext.
 - New service: Application/Services + register in Application/DependencyInjection.cs.
 
+## Services and registration
+- Every Application service has an interface: Application/Interfaces/Services/IXyzService.cs,
+  implemented by Application/Services/XyzService.cs. Controllers and hubs depend on the interface only.
+- Each layer (Application, Persistence, Infrastructure, Api) has an AssemblyReference class.
+- Program.cs calls builder.Services.AddServicesFromAssemblies(...AssemblyReference.Assembly...)
+  (Api/Extensions/ServiceCollectionExtensions.cs): every class "XyzService" with an "IXyzService"
+  interface is registered as scoped. New service = add XyzService + IXyzService, nothing else to register.
+- Special lifetimes stay explicit: PresenceTracker (singleton), LocalPhotoStorage (singleton),
+  RazorpayGateway (typed HttpClient), AppDbContext/Identity (AddPersistence).
+- Loose coupling: classes receive what they need through the constructor, always as an interface.
+  Shared logic is a service too: IProfileCardService (cards, privacy, blocks), IPremiumAccessService
+  (plan checks), IInterestService.FindBetweenAsync. No static helper touches the database.
+  Only pure calculations with no dependencies stay static (AgeRules).
+- ChatHub and ChatService use IPresenceTracker (singleton PresenceTracker in the Api).
+- Auth signup endpoint: POST /api/auth/signup.
+
 ## Migrations (Package Manager Console)
 Default project: Matrimony.Persistence, startup project: Matrimony.Api
 ```

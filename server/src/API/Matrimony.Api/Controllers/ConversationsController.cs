@@ -2,7 +2,7 @@ using Matrimony.Api.Extensions;
 using Matrimony.Api.Hubs;
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -13,7 +13,7 @@ namespace Matrimony.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/conversations")]
-public class ConversationsController(ChatService chatService, IHubContext<ChatHub> hub) : ControllerBase
+public class ConversationsController(IChatService chatService, IHubContext<ChatHub> hub) : ControllerBase
 {
     // GET /api/conversations — my chat list
     [HttpGet]

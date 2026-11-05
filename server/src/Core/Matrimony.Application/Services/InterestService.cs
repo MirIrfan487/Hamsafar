@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Matrimony.Application.Services;
 
 // Send / accept / reject / withdraw interests.
 // When an interest is accepted, a Conversation is created so the two members can chat (Phase 6).
-public class InterestService(IAppDbContext db)
+public class InterestService(IAppDbContext db, IProfileCardService profileCards) : IInterestService
 {
     public const int DailySendLimit = 20;
 
@@ -27,7 +28,7 @@ public class InterestService(IAppDbContext db)
 
         var receiver = await db.Profiles.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == receiverId);
         if (receiver is null || receiver.Status != ProfileStatus.Approved || receiver.User.IsSuspended
-            || receiver.Gender == me.Gender || await ProfileCards.IsBlockedAsync(db, me.Id, receiver.Id))
+            || receiver.Gender == me.Gender || await profileCards.IsBlockedAsync(me.Id, receiver.Id))
             return Fail("This profile is not available.");
 
         // What already exists between us (either direction)?
@@ -80,7 +81,7 @@ public class InterestService(IAppDbContext db)
         var interest = await db.Interests.FirstOrDefaultAsync(i => i.Id == interestId && i.ReceiverProfileId == myId);
         if (interest is null) return Fail("Interest not found.");
         if (interest.Status != InterestStatus.Pending) return Fail("This interest has already been answered.");
-        if (await ProfileCards.IsBlockedAsync(db, interest.SenderProfileId, interest.ReceiverProfileId))
+        if (await profileCards.IsBlockedAsync(interest.SenderProfileId, interest.ReceiverProfileId))
             return Fail("This profile is not available.");
 
         interest.Status = accept ? InterestStatus.Accepted : InterestStatus.Rejected;
@@ -155,7 +156,7 @@ public class InterestService(IAppDbContext db)
     }
 
     // Used by the profile page: the most relevant interest between two profiles
-    public static async Task<InterestBetweenResponse?> FindBetweenAsync(IAppDbContext db, int myId, int otherId)
+    public async Task<InterestBetweenResponse?> FindBetweenAsync(int myId, int otherId)
     {
         var rows = await db.Interests.AsNoTracking()
             .Where(i => (i.SenderProfileId == myId && i.ReceiverProfileId == otherId) ||
@@ -192,15 +193,15 @@ public class InterestService(IAppDbContext db)
             .ToList();
 
         // Cards for the other members (hidden if blocked or suspended since)
-        var rows = await ProfileCards.ToRows(db.Profiles.AsNoTracking().Where(p =>
+        var rows = await profileCards.ToRows(db.Profiles.AsNoTracking().Where(p =>
                 otherIds.Contains(p.Id) &&
                 !p.User.IsSuspended &&
                 !db.Blocks.Any(b =>
                     (b.BlockerProfileId == myId && b.BlockedProfileId == p.Id) ||
                     (b.BlockerProfileId == p.Id && b.BlockedProfileId == myId))))
             .ToListAsync();
-        var acceptedIds = await ProfileCards.AcceptedInterestProfileIdsAsync(db, myId);
-        var cards = rows.ToDictionary(x => x.Id, x => ProfileCards.ToCard(x, acceptedIds));
+        var acceptedIds = await profileCards.AcceptedInterestProfileIdsAsync(myId);
+        var cards = rows.ToDictionary(x => x.Id, x => profileCards.ToCard(x, acceptedIds));
 
         return interests
             .Select(i =>

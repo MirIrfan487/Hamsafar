@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace Matrimony.Application.Services;
 // Finding and viewing OTHER members' profiles.
 // Rules for who appears: approved profile, opposite gender, not yourself,
 // no block in either direction, account not suspended.
-public class SearchService(IAppDbContext db)
+public class SearchService(IAppDbContext db, IProfileCardService profileCards, IPremiumAccessService premiumAccess, IInterestService interestService) : ISearchService
 {
     public async Task<ServiceResult<PagedResult<ProfileCardResponse>>> SearchAsync(string viewerUserId, SearchRequest r)
     {
@@ -23,7 +24,7 @@ public class SearchService(IAppDbContext db)
             return ServiceResult<PagedResult<ProfileCardResponse>>.Fail("Maximum age must be the same as or more than minimum age.");
 
         var targetGender = me.Gender == Gender.Male ? Gender.Female : Gender.Male;
-        var acceptedIds = await ProfileCards.AcceptedInterestProfileIdsAsync(db, me.Id);
+        var acceptedIds = await profileCards.AcceptedInterestProfileIdsAsync(me.Id);
 
         // ---------- Who can appear at all ----------
         var q = db.Profiles.AsNoTracking().Where(p =>
@@ -92,8 +93,8 @@ public class SearchService(IAppDbContext db)
             _ => q.OrderByDescending(p => p.CreatedAtUtc).ThenBy(p => p.Id)
         };
 
-        var rows = await ProfileCards.ToRows(q.Skip((r.Page - 1) * r.PageSize).Take(r.PageSize)).ToListAsync();
-        var items = rows.Select(x => ProfileCards.ToCard(x, acceptedIds)).ToList();
+        var rows = await profileCards.ToRows(q.Skip((r.Page - 1) * r.PageSize).Take(r.PageSize)).ToListAsync();
+        var items = rows.Select(x => profileCards.ToCard(x, acceptedIds)).ToList();
 
         return ServiceResult<PagedResult<ProfileCardResponse>>.Ok(new PagedResult<ProfileCardResponse>(items, r.Page, r.PageSize, total));
     }
@@ -119,22 +120,22 @@ public class SearchService(IAppDbContext db)
         if (!isOwn)
         {
             if (p.Status != ProfileStatus.Approved || p.User.IsSuspended) return null;
-            if (await ProfileCards.IsBlockedAsync(db, viewerProfileId, p.Id)) return null;
+            if (await profileCards.IsBlockedAsync(viewerProfileId, p.Id)) return null;
         }
 
-        var acceptedIds = isOwn ? new List<int>() : await ProfileCards.AcceptedInterestProfileIdsAsync(db, viewerProfileId);
-        var interest = isOwn ? null : await InterestService.FindBetweenAsync(db, viewerProfileId, p.Id);
+        var acceptedIds = isOwn ? new List<int>() : await profileCards.AcceptedInterestProfileIdsAsync(viewerProfileId);
+        var interest = isOwn ? null : await interestService.FindBetweenAsync(viewerProfileId, p.Id);
         var approvedPhotos = p.Photos
             .Where(ph => isOwn || ph.Status == PhotoStatus.Approved)
             .OrderByDescending(ph => ph.IsMain).ThenBy(ph => ph.UploadedAtUtc)
             .Select(ph => ph.Id)
             .ToList();
-        var canSee = isOwn || ProfileCards.CanSeePhotos(p.PhotoPrivacy, acceptedIds.Contains(p.Id));
+        var canSee = isOwn || profileCards.CanSeePhotos(p.PhotoPrivacy, acceptedIds.Contains(p.Id));
         var locked = !canSee && approvedPhotos.Count > 0 && p.PhotoPrivacy == PhotoPrivacy.AcceptedInterestsOnly;
 
         var pp = p.PartnerPreference;
         return new ProfileDetailResponse(
-            p.Id, ProfileCards.DisplayName(p.FirstName, p.LastName, p.ShowLastName || isOwn), isOwn, p.Status,
+            p.Id, profileCards.DisplayName(p.FirstName, p.LastName, p.ShowLastName || isOwn), isOwn, p.Status,
             p.ProfileFor, p.Gender, AgeRules.CalculateAge(p.DateOfBirth), p.MaritalStatus, p.HeightCm,
             p.Country, p.State, p.City, p.Education, p.Occupation,
             p.Sect, p.Religiosity, p.MotherTongue, p.AboutMe,
@@ -154,11 +155,11 @@ public class SearchService(IAppDbContext db)
             .Where(x => x.UserId == viewerUserId).Select(x => (int?)x.Id).FirstOrDefaultAsync();
         if (viewerProfileId is null) return ServiceResult<ContactDetailsResponse>.Fail("Profile not found.");
 
-        var interest = await InterestService.FindBetweenAsync(db, viewerProfileId.Value, profileId);
-        if (interest?.Status != InterestStatus.Accepted || await ProfileCards.IsBlockedAsync(db, viewerProfileId.Value, profileId))
+        var interest = await interestService.FindBetweenAsync(viewerProfileId.Value, profileId);
+        if (interest?.Status != InterestStatus.Accepted || await profileCards.IsBlockedAsync(viewerProfileId.Value, profileId))
             return ServiceResult<ContactDetailsResponse>.Fail("Contact details are shown only after an interest is accepted.");
 
-        if (!await PremiumAccess.CanViewContactsAsync(db, viewerUserId))
+        if (!await premiumAccess.CanViewContactsAsync(viewerUserId))
             return ServiceResult<ContactDetailsResponse>.Fail("Contact details need Premium.");
 
         var contact = await db.Profiles.AsNoTracking()

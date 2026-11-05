@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Constants;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
@@ -23,7 +24,7 @@ public record LoginResult(bool Succeeded, string? Error, LoginResponse? Response
 }
 
 // Business logic for accounts. Controllers stay thin and call this.
-public class AuthService(UserManager<AppUser> userManager, IAppDbContext db, ITokenService tokenService)
+public class AuthService(UserManager<AppUser> userManager, IAppDbContext db, ITokenService tokenService) : IAuthService
 {
     // Same message for "no such email" and "wrong password",
     // so nobody can use the login form to discover which emails are registered.

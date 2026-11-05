@@ -1,5 +1,5 @@
 using Matrimony.Api.Extensions;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +9,7 @@ namespace Matrimony.Api.Controllers;
 // Profile photos. Every action needs login.
 [ApiController]
 [Authorize]
-public class PhotosController(PhotoService photoService) : ControllerBase
+public class PhotosController(IPhotoService photoService) : ControllerBase
 {
     private const long MaxRequestBytes = 6 * 1024 * 1024;   // 5 MB photo + form overhead
 

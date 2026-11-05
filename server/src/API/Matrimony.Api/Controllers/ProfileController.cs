@@ -1,7 +1,7 @@
 using Matrimony.Api.Extensions;
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +11,7 @@ namespace Matrimony.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/profile")]
-public class ProfileController(ProfileService profileService) : ControllerBase
+public class ProfileController(IProfileService profileService) : ControllerBase
 {
     // GET /api/profile/me
     [HttpGet("me")]

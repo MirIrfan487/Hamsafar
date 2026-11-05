@@ -1,4 +1,5 @@
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -13,7 +14,7 @@ namespace Matrimony.Api.Hubs;
 //   "Typing"          (conversationId)              the other person is typing
 //   "PresenceChanged" (profileId, isOnline)         someone I chat with came online / went offline
 [Authorize]
-public class ChatHub(ChatService chatService, PresenceTracker presence) : Hub
+public class ChatHub(IChatService chatService, IPresenceTracker presence) : Hub
 {
     public override async Task OnConnectedAsync()
     {

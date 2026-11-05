@@ -4,8 +4,8 @@
 
 using System.Text;
 using System.Text.Json.Serialization;
+using Matrimony.Api.Extensions;
 using Matrimony.Api.Hubs;
-using Matrimony.Application;
 using Matrimony.Application.Common;
 using Matrimony.Application.Interfaces;
 using Matrimony.Infrastructure;
@@ -22,9 +22,17 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------- Layers ----------
-builder.Services.AddApplication();                          // services (AuthService, ProfileService)
 builder.Services.AddPersistence(builder.Configuration);     // SQL Server, AppDbContext, Identity
-builder.Services.AddInfrastructure(builder.Configuration);  // JWT TokenService
+builder.Services.AddInfrastructure(builder.Configuration);  // settings, photo storage, Razorpay HttpClient
+
+// ---------- Services ----------
+// Every "XyzService : IXyzService" in these layers is registered as scoped (see Extensions/ServiceCollectionExtensions.cs).
+// Each layer has an AssemblyReference class that points to its .dll.
+builder.Services.AddServicesFromAssemblies(
+    Matrimony.Application.AssemblyReference.Assembly,     // AuthService, ProfileService, ChatService, AdminService, ...
+    Matrimony.Persistence.AssemblyReference.Assembly,
+    Matrimony.Infrastructure.AssemblyReference.Assembly,  // TokenService
+    Matrimony.Api.AssemblyReference.Assembly);
 
 // ---------- Web API ----------
 builder.Services.AddControllers()
@@ -102,8 +110,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddSignalR()
     .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();   // Clients.User(id) = our user id
-builder.Services.AddSingleton<PresenceTracker>();                           // who is online
-builder.Services.AddSingleton<IPresenceTracker>(sp => sp.GetRequiredService<PresenceTracker>());
+builder.Services.AddSingleton<IPresenceTracker, PresenceTracker>();          // who is online (one shared instance)
 
 var app = builder.Build();
 

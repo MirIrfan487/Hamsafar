@@ -1,6 +1,7 @@
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Matrimony.Application.Services;
 
 // Uploading, managing and viewing profile photos — with all the privacy rules in one place.
-public class PhotoService(IAppDbContext db, IPhotoStorage storage)
+public class PhotoService(IAppDbContext db, IPhotoStorage storage) : IPhotoService
 {
     public const int MaxPhotos = 6;
     public const long MaxFileBytes = 5 * 1024 * 1024;   // 5 MB

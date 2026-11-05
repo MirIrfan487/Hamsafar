@@ -3,6 +3,9 @@ using Matrimony.Domain.Enums;
 
 namespace Matrimony.Application.DTOs;
 
+// Who is doing an admin action (written to the activity log)
+public record AdminActor(string UserId, string Email);
+
 public record AdminStatsResponse(
     int TotalMembers, int NewMembersLast7Days,
     int PendingProfiles, int ApprovedProfiles,

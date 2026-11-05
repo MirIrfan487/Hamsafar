@@ -1,7 +1,7 @@
 using Matrimony.Api.Extensions;
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +10,7 @@ namespace Matrimony.Api.Controllers;
 // Members: report and block other profiles
 [ApiController]
 [Authorize]
-public class SafetyController(SafetyService safetyService) : ControllerBase
+public class SafetyController(ISafetyService safetyService) : ControllerBase
 {
     // POST /api/profiles/12/report   { "reason": "FakeProfile", "details": "..." }
     [HttpPost("api/profiles/{id:int}/report")]

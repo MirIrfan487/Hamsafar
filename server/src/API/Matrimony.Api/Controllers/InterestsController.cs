@@ -1,7 +1,7 @@
 using Matrimony.Api.Extensions;
 using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +10,7 @@ namespace Matrimony.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/interests")]
-public class InterestsController(InterestService interestService) : ControllerBase
+public class InterestsController(IInterestService interestService) : ControllerBase
 {
     // GET /api/interests?box=Received   (Received | Sent | Connected)
     [HttpGet]

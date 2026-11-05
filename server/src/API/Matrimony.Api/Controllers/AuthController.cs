@@ -1,5 +1,5 @@
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -8,9 +8,9 @@ namespace Matrimony.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService authService) : ControllerBase
+public class AuthController(IAuthService authService) : ControllerBase
 {
-    // POST /api/auth/register
+    // POST /api/auth/signup
     [HttpPost("Signup")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {

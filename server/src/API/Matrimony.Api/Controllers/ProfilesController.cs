@@ -1,6 +1,6 @@
 using Matrimony.Api.Extensions;
 using Matrimony.Application.DTOs;
-using Matrimony.Application.Services;
+using Matrimony.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +10,7 @@ namespace Matrimony.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/profiles")]
-public class ProfilesController(SearchService searchService) : ControllerBase
+public class ProfilesController(ISearchService searchService) : ControllerBase
 {
     // GET /api/profiles/search?ageMin=24&ageMax=30&maritalStatuses=NeverMarried&city=Srinagar
     [HttpGet("search")]
