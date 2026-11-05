@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import ErrorAlert from '../components/ErrorAlert'
 import SecurePhoto from '../components/SecurePhoto'
 import { PhotoPlaceholder } from '../components/ProfileCard'
+import InterestActions from '../components/InterestActions'
 import { ApiError } from '../services/api'
 import { searchApi, type ProfileDetail } from '../services/search'
 import {
@@ -51,15 +52,18 @@ export default function ProfileDetailPage() {
   const [errors, setErrors] = useState<string[]>([])
   const [activePhoto, setActivePhoto] = useState(0)
 
-  useEffect(() => {
-    setProfile(null)
-    setErrors([])
-    setActivePhoto(0)
+  const load = () =>
     searchApi
       .getProfile(Number(id))
       .then(setProfile)
       .catch((err) => setErrors(err instanceof ApiError ? err.messages : ['Could not reach the server. Is the API running?']))
-  }, [id])
+
+  useEffect(() => {
+    setProfile(null)
+    setErrors([])
+    setActivePhoto(0)
+    load()
+  }, [id]) // load again when the id in the URL changes
 
   if (errors.length > 0)
     return (
@@ -126,6 +130,8 @@ export default function ProfileDetailPage() {
             <p className="mt-1 text-ink-soft">{[p.city, p.state, p.country].filter(Boolean).join(', ')}</p>
             <p className="mt-1 text-sm text-ink-soft">{CREATED_BY_LABELS[p.profileFor]}</p>
           </div>
+
+          {!p.isOwnProfile && <InterestActions profile={p} onChanged={load} />}
 
           {p.aboutMe && (
             <Section title="About">

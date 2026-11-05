@@ -38,6 +38,9 @@ export default function Navbar() {
             <Link to="/search" className="font-medium text-ink hover:text-brand-600">
               Search
             </Link>
+            <Link to="/interests" className="font-medium text-ink hover:text-brand-600">
+              Interests
+            </Link>
             <Link to="/dashboard" className="font-medium text-ink hover:text-brand-600">
               {user.firstName || 'Dashboard'}
             </Link>

@@ -23,7 +23,7 @@ public class SearchService(IAppDbContext db)
             return ServiceResult<PagedResult<ProfileCardResponse>>.Fail("Maximum age must be the same as or more than minimum age.");
 
         var targetGender = me.Gender == Gender.Male ? Gender.Female : Gender.Male;
-        var acceptedIds = await AcceptedInterestProfileIdsAsync(me.Id);
+        var acceptedIds = await ProfileCards.AcceptedInterestProfileIdsAsync(db, me.Id);
 
         // ---------- Who can appear at all ----------
         var q = db.Profiles.AsNoTracking().Where(p =>
@@ -92,31 +92,8 @@ public class SearchService(IAppDbContext db)
             _ => q.OrderByDescending(p => p.CreatedAtUtc).ThenBy(p => p.Id)
         };
 
-        var rows = await q
-            .Skip((r.Page - 1) * r.PageSize)
-            .Take(r.PageSize)
-            .Select(p => new
-            {
-                p.Id, p.FirstName, p.LastName, p.ShowLastName, p.DateOfBirth, p.HeightCm,
-                p.City, p.State, p.Education, p.Occupation, p.MaritalStatus, p.Sect, p.Religiosity,
-                p.ProfileFor, p.PhotoPrivacy,
-                PhotoId = p.Photos
-                    .Where(ph => ph.Status == PhotoStatus.Approved)
-                    .OrderByDescending(ph => ph.IsMain).ThenBy(ph => ph.UploadedAtUtc)
-                    .Select(ph => (int?)ph.Id)
-                    .FirstOrDefault()
-            })
-            .ToListAsync();
-
-        var items = rows.Select(x =>
-        {
-            var canSee = x.PhotoId is not null && CanSeePhotos(x.PhotoPrivacy, acceptedIds.Contains(x.Id));
-            var locked = x.PhotoId is not null && !canSee && x.PhotoPrivacy == PhotoPrivacy.AcceptedInterestsOnly;
-            return new ProfileCardResponse(
-                x.Id, DisplayName(x.FirstName, x.LastName, x.ShowLastName), AgeRules.CalculateAge(x.DateOfBirth), x.HeightCm,
-                x.City, x.State, x.Education, x.Occupation, x.MaritalStatus, x.Sect, x.Religiosity, x.ProfileFor,
-                canSee ? x.PhotoId : null, locked);
-        }).ToList();
+        var rows = await ProfileCards.ToRows(q.Skip((r.Page - 1) * r.PageSize).Take(r.PageSize)).ToListAsync();
+        var items = rows.Select(x => ProfileCards.ToCard(x, acceptedIds)).ToList();
 
         return ServiceResult<PagedResult<ProfileCardResponse>>.Ok(new PagedResult<ProfileCardResponse>(items, r.Page, r.PageSize, total));
     }
@@ -124,9 +101,12 @@ public class SearchService(IAppDbContext db)
     // Returns null if the viewer may not see this profile (the controller answers 404)
     public async Task<ProfileDetailResponse?> GetProfileAsync(string viewerUserId, int profileId)
     {
-        var viewerProfileId = await db.Profiles
-            .Where(p => p.UserId == viewerUserId).Select(p => (int?)p.Id).FirstOrDefaultAsync();
-        if (viewerProfileId is null) return null;
+        var viewer = await db.Profiles.AsNoTracking()
+            .Where(x => x.UserId == viewerUserId)
+            .Select(x => new { x.Id, x.Status })
+            .FirstOrDefaultAsync();
+        if (viewer is null) return null;
+        int viewerProfileId = viewer.Id;
 
         var p = await db.Profiles.AsNoTracking()
             .Include(x => x.User)
@@ -139,24 +119,22 @@ public class SearchService(IAppDbContext db)
         if (!isOwn)
         {
             if (p.Status != ProfileStatus.Approved || p.User.IsSuspended) return null;
-            var blocked = await db.Blocks.AnyAsync(b =>
-                (b.BlockerProfileId == viewerProfileId && b.BlockedProfileId == p.Id) ||
-                (b.BlockerProfileId == p.Id && b.BlockedProfileId == viewerProfileId));
-            if (blocked) return null;
+            if (await ProfileCards.IsBlockedAsync(db, viewerProfileId, p.Id)) return null;
         }
 
-        var acceptedIds = isOwn ? new List<int>() : await AcceptedInterestProfileIdsAsync(viewerProfileId.Value);
+        var acceptedIds = isOwn ? new List<int>() : await ProfileCards.AcceptedInterestProfileIdsAsync(db, viewerProfileId);
+        var interest = isOwn ? null : await InterestService.FindBetweenAsync(db, viewerProfileId, p.Id);
         var approvedPhotos = p.Photos
             .Where(ph => isOwn || ph.Status == PhotoStatus.Approved)
             .OrderByDescending(ph => ph.IsMain).ThenBy(ph => ph.UploadedAtUtc)
             .Select(ph => ph.Id)
             .ToList();
-        var canSee = isOwn || CanSeePhotos(p.PhotoPrivacy, acceptedIds.Contains(p.Id));
+        var canSee = isOwn || ProfileCards.CanSeePhotos(p.PhotoPrivacy, acceptedIds.Contains(p.Id));
         var locked = !canSee && approvedPhotos.Count > 0 && p.PhotoPrivacy == PhotoPrivacy.AcceptedInterestsOnly;
 
         var pp = p.PartnerPreference;
         return new ProfileDetailResponse(
-            p.Id, DisplayName(p.FirstName, p.LastName, p.ShowLastName || isOwn), isOwn, p.Status,
+            p.Id, ProfileCards.DisplayName(p.FirstName, p.LastName, p.ShowLastName || isOwn), isOwn, p.Status,
             p.ProfileFor, p.Gender, AgeRules.CalculateAge(p.DateOfBirth), p.MaritalStatus, p.HeightCm,
             p.Country, p.State, p.City, p.Education, p.Occupation,
             p.Sect, p.Religiosity, p.MotherTongue, p.AboutMe,
@@ -164,28 +142,8 @@ public class SearchService(IAppDbContext db)
             pp is null ? null : new PartnerPreferenceResponse(pp.AgeMin, pp.AgeMax, pp.HeightMinCm, pp.HeightMaxCm,
                 pp.MaritalStatuses, pp.Sects, pp.Cities, pp.Education, pp.Notes),
             canSee ? approvedPhotos : new List<int>(),
-            locked);
+            locked,
+            interest,
+            viewer.Status == ProfileStatus.Approved);
     }
-
-    // ---------- Helpers ----------
-
-    // Profiles that have an ACCEPTED interest with me, in either direction
-    private Task<List<int>> AcceptedInterestProfileIdsAsync(int myProfileId) =>
-        db.Interests
-            .Where(i => i.Status == InterestStatus.Accepted &&
-                        (i.SenderProfileId == myProfileId || i.ReceiverProfileId == myProfileId))
-            .Select(i => i.SenderProfileId == myProfileId ? i.ReceiverProfileId : i.SenderProfileId)
-            .ToListAsync();
-
-    // Same rules as PhotoService.CanViewAsync (photo status is checked separately)
-    private static bool CanSeePhotos(PhotoPrivacy privacy, bool hasAcceptedInterest) => privacy switch
-    {
-        PhotoPrivacy.AllMembers => true,
-        PhotoPrivacy.AcceptedInterestsOnly => hasAcceptedInterest,
-        _ => false
-    };
-
-    // "Ayesha" or "Ayesha Khan" — the last name only if the member chose to show it
-    private static string DisplayName(string firstName, string? lastName, bool showLastName) =>
-        showLastName && !string.IsNullOrWhiteSpace(lastName) ? $"{firstName} {lastName}" : firstName;
 }

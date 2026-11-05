@@ -1,6 +1,7 @@
 import { apiRequest } from './api'
 import type { Gender, ProfileFor } from './auth'
 import type { MaritalStatus, PartnerPreference, ProfileStatus, Religiosity, Sect } from './profile'
+import type { InterestBetween } from './interests'
 
 export type SearchSort = 'Newest' | 'Youngest' | 'Oldest'
 
@@ -56,6 +57,8 @@ export interface ProfileDetail {
   partnerPreference: PartnerPreference | null
   photoIds: number[]
   photosLocked: boolean
+  interest: InterestBetween | null // what is going on between you and this member
+  viewerIsApproved: boolean // only approved members can send interests
 }
 
 // ---------- Filters <-> URL (so Back, refresh and sharing a link keep the search) ----------

@@ -9,6 +9,7 @@ import StatusPage from './pages/StatusPage'
 import ProfileWizardPage from './pages/ProfileWizardPage'
 import SearchPage from './pages/SearchPage'
 import ProfileDetailPage from './pages/ProfileDetailPage'
+import InterestsPage from './pages/InterestsPage'
 
 // All pages (routes) of the app in one place
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/profile/edit" element={<ProfileWizardPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/profiles/:id" element={<ProfileDetailPage />} />
+          <Route path="/interests" element={<InterestsPage />} />
         </Route>
       </Route>
 

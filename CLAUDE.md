@@ -136,4 +136,11 @@ include email, phone, exact DOB, or a hidden last name. Photo ids only when the 
 Frontend: /search (filters in URL; starts from own partner preferences), /profiles/:id, ProfileCard.
 Dev data: SampleProfiles seeds 10 approved profiles (sample.f1..f5 / sample.m1..m5 @sample.test,
 password123) when "SeedSampleProfiles": true in appsettings.Development.json. Never enable in production.
-Next: Phase 5 — interests (send / accept / reject / withdraw).
+Phase 5 in progress: InterestService + InterestsController: GET /api/interests?box=Received|Sent|Connected,
+GET /summary, POST /api/interests {receiverProfileId, note}, POST /{id}/accept|reject|withdraw.
+Rules: sender must be Approved; receiver Approved, opposite gender, not blocked/suspended; max 20 per 24h;
+no resend after Rejected; Withdrawn row is reused; if the other side already sent one, accept theirs.
+Accept creates a Conversation (Profile1Id < Profile2Id). ProfileDetailResponse has Interest + ViewerIsApproved.
+Shared card/privacy logic: Application/Services/ProfileCards.cs (used by search and interests).
+Frontend: components/InterestActions.tsx on /profiles/:id, pages/InterestsPage.tsx at /interests?tab=...
+Next: Phase 6 — chat (SignalR).

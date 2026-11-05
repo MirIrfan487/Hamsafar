@@ -12,6 +12,7 @@ public static class DependencyInjection
         services.AddScoped<ProfileService>();
         services.AddScoped<PhotoService>();
         services.AddScoped<SearchService>();
+        services.AddScoped<InterestService>();
         return services;
     }
 }

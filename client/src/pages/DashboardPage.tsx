@@ -4,6 +4,7 @@ import ErrorAlert from '../components/ErrorAlert'
 import { useAuth } from '../hooks/useAuth'
 import { ApiError } from '../services/api'
 import { profileApi, type MyProfile, type ProfileStatus } from '../services/profile'
+import { interestsApi, type InterestSummary } from '../services/interests'
 import { STATUS_LABELS } from '../utils/options'
 
 // What to tell the user for each profile status
@@ -26,6 +27,11 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const [profile, setProfile] = useState<MyProfile | null>(null)
   const [error, setError] = useState<string[]>([])
+  const [interests, setInterests] = useState<InterestSummary | null>(null)
+
+  useEffect(() => {
+    interestsApi.summary().then(setInterests).catch(() => setInterests(null))
+  }, [])
 
   useEffect(() => {
     profileApi
@@ -86,6 +92,31 @@ export default function DashboardPage() {
               </Link>
             )}
           </div>
+        </div>
+
+        <div className="rounded-2xl border bg-white p-5">
+          <p className="text-sm font-semibold text-ink">Interests</p>
+          {interests ? (
+            <ul className="mt-2 space-y-1 text-sm text-ink-soft">
+              <li>
+                <Link to="/interests?tab=Received" className="hover:text-brand-700">
+                  <span className="font-semibold text-ink">{interests.receivedPending}</span> waiting for your reply
+                </Link>
+              </li>
+              <li>
+                <Link to="/interests?tab=Sent" className="hover:text-brand-700">
+                  <span className="font-semibold text-ink">{interests.sentPending}</span> sent, waiting for a reply
+                </Link>
+              </li>
+              <li>
+                <Link to="/interests?tab=Connected" className="hover:text-brand-700">
+                  <span className="font-semibold text-ink">{interests.connected}</span> connected
+                </Link>
+              </li>
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-ink-soft">Loading…</p>
+          )}
         </div>
 
         <div className="rounded-2xl border bg-white p-5">

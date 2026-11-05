@@ -73,4 +73,6 @@ public record ProfileDetailResponse(
     string? FatherOccupation, string? MotherOccupation, int? Brothers, int? Sisters, string? FamilyDetails,
     PartnerPreferenceResponse? PartnerPreference,
     IReadOnlyList<int> PhotoIds,   // photos THIS viewer may see (main photo first)
-    bool PhotosLocked);
+    bool PhotosLocked,
+    InterestBetweenResponse? Interest,   // the interest between you and this member, if any
+    bool ViewerIsApproved);              // only approved members can send interests
