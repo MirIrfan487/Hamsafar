@@ -34,7 +34,10 @@ export default function Navbar() {
         </ul>
 
         {user ? (
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-3 text-sm sm:gap-4">
+            <Link to="/search" className="font-medium text-ink hover:text-brand-600">
+              Search
+            </Link>
             <Link to="/dashboard" className="font-medium text-ink hover:text-brand-600">
               {user.firstName || 'Dashboard'}
             </Link>

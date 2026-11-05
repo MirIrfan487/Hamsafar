@@ -74,3 +74,19 @@ export function labelFor(options: Option[], value: string | null | undefined): s
 export function heightLabel(cm: string): string {
   return labelFor(HEIGHT_OPTIONS, cm) || (cm ? `${cm} cm` : '')
 }
+
+// Who created the profile, as shown to other members
+export const CREATED_BY_LABELS: Record<ProfileFor, string> = {
+  Self: 'Created by the member',
+  Son: 'Created by a parent',
+  Daughter: 'Created by a parent',
+  Brother: 'Created by a sibling',
+  Sister: 'Created by a sibling',
+  Relative: 'Created by a relative or friend',
+}
+
+export const SORT_OPTIONS: Option[] = [
+  { value: 'Newest', label: 'Newest first' },
+  { value: 'Youngest', label: 'Youngest first' },
+  { value: 'Oldest', label: 'Oldest first' },
+]

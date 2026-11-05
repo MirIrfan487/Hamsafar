@@ -64,9 +64,15 @@ function Hero() {
   const handleSearch = (e: FormEvent) => {
     e.preventDefault()
     // Profiles are visible to members only. Visitors register first (we pre-fill what we can).
-    // The search results page comes in Phase 4.
-    if (user) navigate('/dashboard')
-    else navigate('/register', { state: { lookingFor, maritalStatus, city } })
+    // Members go straight to search (gender is automatic: they always see the opposite gender).
+    if (user) {
+      const params = new URLSearchParams()
+      if (maritalStatus !== 'Any') params.append('maritalStatuses', maritalStatus)
+      if (city.trim()) params.set('city', city.trim())
+      navigate(`/search?${params.toString()}`)
+    } else {
+      navigate('/register', { state: { lookingFor, maritalStatus, city } })
+    }
   }
 
   const fieldClass =

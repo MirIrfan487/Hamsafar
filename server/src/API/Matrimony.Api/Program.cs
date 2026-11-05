@@ -89,6 +89,12 @@ var app = builder.Build();
 // Create the Member/Admin roles if they don't exist yet
 await SeedData.SeedRolesAsync(app.Services);
 
+// Development only: 10 approved sample profiles for testing search (see appsettings.Development.json)
+if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("SeedSampleProfiles"))
+{
+    await SampleProfiles.SeedAsync(app.Services);
+}
+
 // ---------- Request pipeline (order matters) ----------
 if (app.Environment.IsDevelopment())
 {

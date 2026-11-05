@@ -127,4 +127,13 @@ Endpoints: GET/POST /api/profile/me/photos, DELETE /me/photos/{id}, PUT /me/phot
 GET /api/photos/{id} (privacy check: owner/admin always; others need photo+profile Approved, no block,
 PhotoPrivacy AllMembers or an Accepted interest either way). Frontend loads images via SecurePhoto (blob + token).
 Wizard: step 6 = Photos, step 7 = Review.
-Next: Phase 4 — search with filters.
+Phase 3 DONE (photos untested by Claude in the browser).
+Phase 4 in progress: SearchService (Application) + ProfilesController: GET /api/profiles/search ([FromQuery]
+SearchRequest: age, height, maritalStatuses, sects, religiosities, city/state contains, education contains,
+withPhotoOnly, sort Newest/Youngest/Oldest, page, pageSize<=48) and GET /api/profiles/{id}.
+Visibility: Approved, opposite gender, not self, not suspended, no block either way. Cards/detail never
+include email, phone, exact DOB, or a hidden last name. Photo ids only when the viewer may see them.
+Frontend: /search (filters in URL; starts from own partner preferences), /profiles/:id, ProfileCard.
+Dev data: SampleProfiles seeds 10 approved profiles (sample.f1..f5 / sample.m1..m5 @sample.test,
+password123) when "SeedSampleProfiles": true in appsettings.Development.json. Never enable in production.
+Next: Phase 5 — interests (send / accept / reject / withdraw).

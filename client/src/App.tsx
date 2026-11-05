@@ -7,6 +7,8 @@ import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import StatusPage from './pages/StatusPage'
 import ProfileWizardPage from './pages/ProfileWizardPage'
+import SearchPage from './pages/SearchPage'
+import ProfileDetailPage from './pages/ProfileDetailPage'
 
 // All pages (routes) of the app in one place
 export default function App() {
@@ -21,6 +23,8 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile/edit" element={<ProfileWizardPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/profiles/:id" element={<ProfileDetailPage />} />
         </Route>
       </Route>
 

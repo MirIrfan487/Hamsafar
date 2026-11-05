@@ -71,6 +71,24 @@ export default function DashboardPage() {
         )}
 
         <div className="rounded-2xl border bg-white p-5">
+          <p className="text-sm font-semibold text-ink">Find matches</p>
+          <p className="mt-1 text-sm text-ink-soft">Search approved profiles by age, city, education and religious practice.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link to="/search" className="rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+              Search profiles
+            </Link>
+            {profile && (
+              <Link
+                to={`/profiles/${profile.id}`}
+                className="rounded-full border border-gray-300 px-5 py-2 text-sm font-medium text-ink hover:bg-peach-50"
+              >
+                Preview my profile
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border bg-white p-5">
           <p className="text-sm font-medium text-gray-500">Your account</p>
           <p className="mt-1 text-ink">{user.email}</p>
           <p className="mt-1 text-sm text-gray-500">Role: {user.roles.join(', ')}</p>
