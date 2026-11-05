@@ -117,4 +117,7 @@ Submit needs: City, Education, Occupation, Sect, Religiosity, AboutMe >= 30 char
 Editing an Approved profile -> PendingApproval (re-review); editing a Rejected one -> Draft.
 User id in controllers: User.GetUserId(). Services return ServiceResult<T>.
 Restructured to Clean/Onion architecture (old server/Matrimony.Api folder removed).
-Next: Phase 3, Step 2 — React profile wizard. Step 3 — photo upload.
+Phase 3, Step 2 in progress: profile wizard at /profile/edit?step=1..6 (pages/ProfileWizardPage.tsx,
+components/wizard/*). Steps 1-4 save with PUT /api/profile/me, step 5 PUT /me/preferences, step 6 review +
+POST /me/submit. Form helpers in utils/profileForm.ts, labels in utils/options.ts. Dashboard shows real status.
+Next: Phase 3, Step 3 — photo upload.

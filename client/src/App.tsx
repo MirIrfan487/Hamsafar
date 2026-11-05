@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import StatusPage from './pages/StatusPage'
+import ProfileWizardPage from './pages/ProfileWizardPage'
 
 // All pages (routes) of the app in one place
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
         {/* Pages that need login */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/profile/edit" element={<ProfileWizardPage />} />
         </Route>
       </Route>
 
