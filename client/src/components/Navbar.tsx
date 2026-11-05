@@ -19,7 +19,7 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-peach-100 bg-white/95 backdrop-blur">
+    <header className="border-b border-peach-100 bg-white">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Logo />
 

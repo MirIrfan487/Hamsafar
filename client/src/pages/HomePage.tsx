@@ -48,7 +48,6 @@ export default function HomePage() {
       <TrustSection />
       <FeaturesSection />
       <HowItWorksSection />
-      <CallToAction />
     </>
   )
 }
@@ -367,32 +366,6 @@ function HowItWorksSection() {
             <Step n={3} {...STEPS[2]} />
             <Step n={4} {...STEPS[3]} />
           </ol>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ---------------- Call to action ----------------
-
-function CallToAction() {
-  return (
-    <section className="relative overflow-hidden bg-peach-100 py-16">
-      <Sprig className="pointer-events-none absolute -left-4 bottom-4 hidden w-44 sm:block" />
-      <Bloom className="pointer-events-none absolute right-[10%] top-8 w-10" petal="var(--color-brand-400)" />
-      <div className="relative mx-auto max-w-xl px-4 text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-ink">Start your search today</h2>
-        <p className="mt-3 text-ink-soft">Registration is free. Your profile goes live after our team approves it.</p>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <Link to="/register" className="rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700">
-            Register free
-          </Link>
-          <Link
-            to="/login"
-            className="rounded-full border border-ink/15 bg-white px-6 py-3 text-sm font-semibold text-ink hover:bg-peach-50"
-          >
-            Log in
-          </Link>
         </div>
       </div>
     </section>
