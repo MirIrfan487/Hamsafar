@@ -146,4 +146,27 @@ public class SearchService(IAppDbContext db)
             interest,
             viewer.Status == ProfileStatus.Approved);
     }
+
+    // Email/phone of a CONNECTED member. Needs a Premium plan with contact details.
+    public async Task<ServiceResult<ContactDetailsResponse>> GetContactDetailsAsync(string viewerUserId, int profileId)
+    {
+        var viewerProfileId = await db.Profiles
+            .Where(x => x.UserId == viewerUserId).Select(x => (int?)x.Id).FirstOrDefaultAsync();
+        if (viewerProfileId is null) return ServiceResult<ContactDetailsResponse>.Fail("Profile not found.");
+
+        var interest = await InterestService.FindBetweenAsync(db, viewerProfileId.Value, profileId);
+        if (interest?.Status != InterestStatus.Accepted || await ProfileCards.IsBlockedAsync(db, viewerProfileId.Value, profileId))
+            return ServiceResult<ContactDetailsResponse>.Fail("Contact details are shown only after an interest is accepted.");
+
+        if (!await PremiumAccess.CanViewContactsAsync(db, viewerUserId))
+            return ServiceResult<ContactDetailsResponse>.Fail("Contact details need Premium.");
+
+        var contact = await db.Profiles.AsNoTracking()
+            .Where(x => x.Id == profileId && !x.User.IsSuspended)
+            .Select(x => new ContactDetailsResponse(x.User.Email, x.User.PhoneNumber))
+            .FirstOrDefaultAsync();
+        return contact is null
+            ? ServiceResult<ContactDetailsResponse>.Fail("This profile is not available.")
+            : ServiceResult<ContactDetailsResponse>.Ok(contact);
+    }
 }

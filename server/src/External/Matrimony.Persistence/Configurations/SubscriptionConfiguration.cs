@@ -21,5 +21,8 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
 
         // Fast "does this user have premium right now?" check
         e.HasIndex(s => new { s.UserId, s.EndsAtUtc });
+
+        // One payment can create only ONE subscription (stops double activation by browser + webhook)
+        e.HasIndex(s => s.PaymentId).IsUnique().HasFilter("[PaymentId] IS NOT NULL");
     }
 }

@@ -1,5 +1,6 @@
 using Matrimony.Application.Interfaces;
 using Matrimony.Infrastructure.Authentication;
+using Matrimony.Infrastructure.Payments;
 using Matrimony.Infrastructure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,14 @@ public static class DependencyInjection
         // Photo files on the server's disk
         services.Configure<PhotoStorageSettings>(configuration.GetSection("PhotoStorage"));
         services.AddSingleton<IPhotoStorage, LocalPhotoStorage>();
+
+        // Razorpay (keys from User Secrets / environment variables)
+        services.Configure<RazorpaySettings>(configuration.GetSection("Razorpay"));
+        services.AddHttpClient<IPaymentGateway, RazorpayGateway>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.razorpay.com/v1/");
+            client.Timeout = TimeSpan.FromSeconds(20);
+        });
 
         return services;
     }

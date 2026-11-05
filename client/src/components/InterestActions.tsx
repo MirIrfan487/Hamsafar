@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import ErrorAlert from './ErrorAlert'
 import { ApiError } from '../services/api'
 import { interestsApi } from '../services/interests'
+import { paymentsApi, type ContactDetails } from '../services/payments'
 import type { ProfileDetail } from '../services/search'
 
 const errorMessages = (err: unknown) =>
@@ -14,6 +15,21 @@ export default function InterestActions({ profile, onChanged }: { profile: Profi
   const [writing, setWriting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
+  const [contact, setContact] = useState<ContactDetails | null>(null)
+  const [needsPremium, setNeedsPremium] = useState(false)
+
+  const showContact = async () => {
+    setErrors([])
+    setBusy(true)
+    try {
+      setContact(await paymentsApi.contact(profile.id))
+    } catch (err) {
+      setErrors(errorMessages(err))
+      setNeedsPremium(err instanceof ApiError && err.status === 403)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const run = async (action: () => Promise<unknown>) => {
     setErrors([])
@@ -38,11 +54,37 @@ export default function InterestActions({ profile, onChanged }: { profile: Profi
   let content: ReactNode
   if (i?.status === 'Accepted') {
     content = (
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-green-800">You are connected with {name}.</p>
-        <Link to={`/chat?with=${profile.id}`} className={primary}>
-          Send a message
-        </Link>
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-green-800">You are connected with {name}.</p>
+          <div className="flex flex-wrap gap-2">
+            <Link to={`/chat?with=${profile.id}`} className={primary}>
+              Send a message
+            </Link>
+            {!contact && (
+              <button type="button" disabled={busy} onClick={showContact} className={secondary}>
+                Show contact details
+              </button>
+            )}
+          </div>
+        </div>
+        {contact && (
+          <dl className="grid gap-1 rounded-xl bg-white p-3 text-sm ring-1 ring-peach-200 sm:grid-cols-2">
+            <div>
+              <dt className="text-ink-soft">Email</dt>
+              <dd className="text-ink">{contact.email ?? 'Not added'}</dd>
+            </div>
+            <div>
+              <dt className="text-ink-soft">Phone</dt>
+              <dd className="text-ink">{contact.phoneNumber ?? 'Not added'}</dd>
+            </div>
+          </dl>
+        )}
+        {needsPremium && (
+          <Link to="/plans" className="inline-block text-sm font-semibold text-brand-700 hover:underline">
+            See Premium plans
+          </Link>
+        )}
       </div>
     )
   } else if (i?.status === 'Pending' && i.direction === 'Received') {

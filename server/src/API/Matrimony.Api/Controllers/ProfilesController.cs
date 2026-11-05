@@ -33,4 +33,17 @@ public class ProfilesController(SearchService searchService) : ControllerBase
         var profile = await searchService.GetProfileAsync(userId, id);
         return profile is null ? NotFound(new { errors = new[] { "This profile is not available." } }) : Ok(profile);
     }
+
+    // GET /api/profiles/12/contact — email/phone of a connected member (Premium)
+    [HttpGet("{id:int}/contact")]
+    public async Task<IActionResult> Contact(int id)
+    {
+        var userId = User.GetUserId();
+        if (userId is null) return Unauthorized();
+
+        var result = await searchService.GetContactDetailsAsync(userId, id);
+        return result.Succeeded
+            ? Ok(result.Value)
+            : StatusCode(StatusCodes.Status403Forbidden, new { errors = result.Errors });
+    }
 }

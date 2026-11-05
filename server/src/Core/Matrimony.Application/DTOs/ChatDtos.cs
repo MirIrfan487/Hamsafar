@@ -5,7 +5,7 @@ namespace Matrimony.Application.DTOs;
 // One chat message. The client compares SenderProfileId with the other member's id to know "mine or theirs".
 public record ChatMessageResponse(long Id, int ConversationId, int SenderProfileId, string Body, DateTime SentAtUtc, DateTime? ReadAtUtc);
 
-// One row in the chat list
+// One row in the chat list. LastMessage is null unless BOTH members have Premium.
 public record ConversationSummaryResponse(
     int Id,
     ProfileCardResponse OtherProfile,
@@ -13,7 +13,9 @@ public record ConversationSummaryResponse(
     int? LastMessageSenderProfileId,
     DateTime? LastMessageAtUtc,
     int UnreadCount,
-    bool CanSend,      // false if the connection ended (block, suspension)
+    bool CanSend,        // connected AND both members have Premium
+    bool IAmPremium,     // BOTH need Premium to read and send messages
+    bool OtherIsPremium,
     bool IsOnline);
 
 // POST /api/conversations/{id}/messages

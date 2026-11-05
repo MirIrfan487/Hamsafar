@@ -1,5 +1,6 @@
 using Matrimony.Api.Extensions;
 using Matrimony.Api.Hubs;
+using Matrimony.Application.Common;
 using Matrimony.Application.DTOs;
 using Matrimony.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -41,8 +42,8 @@ public class ConversationsController(ChatService chatService, IHubContext<ChatHu
         var userId = User.GetUserId();
         if (userId is null) return Unauthorized();
 
-        var messages = await chatService.GetMessagesAsync(userId, id, before);
-        return messages is null ? NotFound(new { errors = new[] { "Conversation not found." } }) : Ok(messages);
+        var result = await chatService.GetMessagesAsync(userId, id, before);
+        return result.Succeeded ? Ok(result.Value) : ToError(result.ErrorCode, result.Errors);
     }
 
     // POST /api/conversations/5/messages   { "body": "Assalamu alaikum" }
@@ -53,7 +54,7 @@ public class ConversationsController(ChatService chatService, IHubContext<ChatHu
         if (userId is null) return Unauthorized();
 
         var result = await chatService.SendAsync(userId, id, request.Body);
-        if (!result.Succeeded) return BadRequest(new { errors = result.Errors });
+        if (!result.Succeeded) return ToError(result.ErrorCode, result.Errors);
 
         var sent = result.Value!;
         // Live push to both people (the sender may have the chat open in another tab too)
@@ -75,4 +76,12 @@ public class ConversationsController(ChatService chatService, IHubContext<ChatHu
             await hub.Clients.User(receipt.OtherUserId).SendAsync("MessagesRead", receipt.ConversationId, receipt.ReadAtUtc);
         return NoContent();
     }
+
+    // not_found -> 404, premium_required -> 403, anything else -> 400
+    private IActionResult ToError(string? errorCode, IReadOnlyList<string> errors) => errorCode switch
+    {
+        ErrorCodes.NotFound => NotFound(new { errors }),
+        ErrorCodes.PremiumRequired => StatusCode(StatusCodes.Status403Forbidden, new { errors }),
+        _ => BadRequest(new { errors })
+    };
 }

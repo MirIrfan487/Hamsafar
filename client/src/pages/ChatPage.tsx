@@ -10,6 +10,9 @@ import { formatChatTime, formatMessageTime } from '../utils/date'
 
 const PAGE_SIZE = 50 // same as ChatService.PageSize
 
+// Both members need Premium to read and send messages
+const canRead = (c: ConversationSummary) => c.iAmPremium && c.otherIsPremium
+
 const errorMessages = (err: unknown) =>
   err instanceof ApiError ? err.messages : ['Could not reach the server. Is the API running?']
 
@@ -59,6 +62,7 @@ export default function ChatPage() {
   })
 
   const active = conversations?.find((c) => c.id === activeId) ?? null
+  const activeCanRead = active ? canRead(active) : false
   const isOnline = (c: ConversationSummary) => presence.get(c.otherProfile.id) ?? c.isOnline
 
   const loadList = useCallback(() => {
@@ -113,7 +117,7 @@ export default function ChatPage() {
     setMessages([])
     setDraft('')
     setOtherTyping(false)
-    if (activeId === null) return
+    if (activeId === null || !activeCanRead) return // no Premium on both sides: messages stay hidden and unread
     let cancelled = false
     setLoadingThread(true)
     setErrors([])
@@ -130,7 +134,7 @@ export default function ChatPage() {
     return () => {
       cancelled = true
     }
-  }, [activeId, markRead])
+  }, [activeId, activeCanRead, markRead])
 
   // 4) Live events from the hub
   useEffect(() => {
@@ -272,7 +276,15 @@ export default function ChatPage() {
                         </span>
                         <span className="flex items-center justify-between gap-2">
                           <span className={`truncate text-sm ${c.unreadCount ? 'font-semibold text-ink' : 'text-ink-soft'}`}>
-                            {c.lastMessage ? `${mineLast ? 'You: ' : ''}${c.lastMessage}` : 'Say salaam to start the conversation'}
+                            {!canRead(c)
+                              ? c.iAmPremium
+                                ? `Waiting for ${c.otherProfile.displayName} to get Premium`
+                                : c.unreadCount
+                                  ? 'New messages: upgrade to read'
+                                  : 'Upgrade to Premium to chat'
+                              : c.lastMessage
+                                ? `${mineLast ? 'You: ' : ''}${c.lastMessage}`
+                                : 'Say salaam to start the conversation'}
                           </span>
                           {c.unreadCount > 0 && (
                             <span className="shrink-0 rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-white">{c.unreadCount}</span>
@@ -335,6 +347,24 @@ export default function ChatPage() {
                   </div>
                 )}
 
+                {!activeCanRead && (
+                  <div className="mx-auto mt-6 max-w-sm rounded-2xl bg-white p-5 text-center ring-1 ring-peach-200">
+                    <p className="font-semibold text-ink">Both members need Premium to chat</p>
+                    <p className="mt-1 text-sm text-ink-soft">
+                      {active.iAmPremium
+                        ? `You have Premium. Messages open as soon as ${active.otherProfile.displayName} also has Premium.`
+                        : active.unreadCount > 0
+                          ? `You have ${active.unreadCount} unread message(s). Upgrade to read them and reply.`
+                          : 'Upgrade to read and send messages.'}
+                    </p>
+                    {!active.iAmPremium && (
+                      <Link to="/plans" className="mt-4 inline-block rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+                        See plans
+                      </Link>
+                    )}
+                  </div>
+                )}
+
                 {loadingThread && <p className="text-center text-sm text-ink-soft">Loading messages…</p>}
 
                 {messages.map((m) => {
@@ -387,7 +417,7 @@ export default function ChatPage() {
                       {sending ? 'Sending…' : 'Send'}
                     </button>
                   </form>
-                ) : (
+                ) : !activeCanRead ? null : (
                   <p className="mt-2 text-center text-sm text-ink-soft">You can no longer send messages in this conversation.</p>
                 )}
               </div>

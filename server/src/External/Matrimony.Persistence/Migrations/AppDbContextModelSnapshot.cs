@@ -603,7 +603,9 @@ namespace Matrimony.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PaymentId");
+                    b.HasIndex("PaymentId")
+                        .IsUnique()
+                        .HasFilter("[PaymentId] IS NOT NULL");
 
                     b.HasIndex("PlanId");
 

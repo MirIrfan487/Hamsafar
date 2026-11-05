@@ -11,6 +11,7 @@ import SearchPage from './pages/SearchPage'
 import ProfileDetailPage from './pages/ProfileDetailPage'
 import InterestsPage from './pages/InterestsPage'
 import ChatPage from './pages/ChatPage'
+import PlansPage from './pages/PlansPage'
 
 // All pages (routes) of the app in one place
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/status" element={<StatusPage />} />
+        <Route path="/plans" element={<PlansPage />} />
 
         {/* Pages that need login */}
         <Route element={<ProtectedRoute />}>

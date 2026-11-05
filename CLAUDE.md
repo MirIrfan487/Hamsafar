@@ -15,7 +15,7 @@ can run and test it.
 - Auth: ASP.NET Core Identity + JWT
 - Real-time chat: SignalR
 - Frontend: React + Vite + TypeScript + Tailwind CSS
-- Payments: Razorpay (test mode during development)
+- Payments: Razorpay (test mode during development; keys in User Secrets)
 - IDE: Visual Studio 2022 (backend), VS Code (frontend)
 
 ## Folder structure (Clean / Onion architecture)
@@ -152,4 +152,19 @@ SubClaimUserIdProvider maps Clients.User(id) to the "sub" claim. PresenceTracker
 implements IPresenceTracker. Can send only if interest Accepted, no block, nobody suspended; 30 msgs/minute.
 Frontend: @microsoft/signalr, hooks/useChat.tsx (ChatProvider: one connection, unreadCount, presence, on()),
 pages/ChatPage.tsx at /chat, /chat/:id, /chat?with=<profileId>. Vite proxies /hubs with ws: true.
-Next: Phase 7 — one paid plan with Razorpay (test mode).
+Phase 7 in progress: Premium with Razorpay (test mode). SubscriptionService (Application) + IPaymentGateway
+-> RazorpayGateway (Infrastructure, HttpClient to api.razorpay.com/v1, Basic auth).
+Endpoints: GET /api/plans (public), GET /api/subscription/me, POST /api/payments/order {planCode},
+POST /api/payments/verify {razorpayOrderId, razorpayPaymentId, razorpaySignature}, POST /api/payments/webhook
+(anonymous, X-Razorpay-Signature over the raw body; events payment.captured / order.paid / payment.failed).
+Verify = HMAC-SHA256(orderId|paymentId, KeySecret) + GET /payments/{id} (order, amount, status captured|authorized).
+Unique filtered index Subscriptions.PaymentId (migration AddSubscriptionPaymentUnique) stops double activation.
+Renewals stack after the current end date. No auto-renewal.
+Premium rules (PremiumAccess.cs): BOTH members need an active CanChat plan to READ or SEND messages
+(list shows unread count but no message text; GET messages / POST message -> 403 premium_required;
+mark-read does nothing). ServiceResult.ErrorCode (not_found / premium_required) picks 404 / 403.
+GET /api/profiles/{id}/contact (email, phone) needs Accepted interest + CanViewContactDetails plan (403 otherwise).
+Razorpay keys: User Secrets of Matrimony.Api -> "Razorpay": {KeyId, KeySecret, WebhookSecret}. Never in Git.
+Frontend: /plans (PlansPage, utils/razorpay.ts loads checkout.js), dashboard plan card, chat upgrade prompt,
+"Show contact details" on connected profiles.
+Next: Phase 8 — admin panel (approve profiles/photos, reports, suspend).

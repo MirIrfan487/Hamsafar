@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Matrimony.Application.Services;
 
 // Private chat between connected members (a Conversation is created when an interest is accepted).
+// Rule: BOTH members need an active Premium plan to read or send messages.
+// Without it they only see that messages are waiting (unread count), never the text.
 public class ChatService(IAppDbContext db, IPresenceTracker presence)
 {
     public const int MaxMessageLength = 2000;
@@ -45,6 +47,10 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
             .Where(p => otherIds.Contains(p.Id))
             .Select(p => new { p.Id, p.UserId, p.User.IsSuspended })
             .ToDictionaryAsync(p => p.Id);
+
+        // Who has Premium right now (me + everyone I chat with), in one query
+        var premiumUsers = await PremiumAccess.UsersWhoCanChatAsync(db, others.Values.Select(o => o.UserId).Append(userId));
+        var iAmPremium = premiumUsers.Contains(userId);
         var acceptedIds = await ProfileCards.AcceptedInterestProfileIdsAsync(db, me.Value);
         var cards = (await ProfileCards.ToRows(db.Profiles.AsNoTracking().Where(p => otherIds.Contains(p.Id))).ToListAsync())
             .ToDictionary(x => x.Id, x => ProfileCards.ToCard(x, acceptedIds));
@@ -55,11 +61,17 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
             .Select(c =>
             {
                 var other = others[c.OtherId];
+                var connected = c.ConnectionStatus == InterestStatus.Accepted && !other.IsSuspended;
+                var otherIsPremium = premiumUsers.Contains(other.UserId);
+                var bothPremium = iAmPremium && otherIsPremium;
                 return new ConversationSummaryResponse(
                     c.Id, cards[c.OtherId],
-                    c.Last?.Body, c.Last?.SenderProfileId, c.Last?.SentAtUtc,
+                    bothPremium ? c.Last?.Body : null,   // no message text without Premium on both sides
+                    c.Last?.SenderProfileId, c.Last?.SentAtUtc,
                     c.Unread,
-                    CanSend: c.ConnectionStatus == InterestStatus.Accepted && !other.IsSuspended,
+                    CanSend: connected && bothPremium,
+                    IAmPremium: iAmPremium,
+                    OtherIsPremium: otherIsPremium,
                     IsOnline: presence.IsOnline(other.UserId));
             })
             .ToList();
@@ -68,10 +80,13 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
     // ---------- Messages ----------
 
     // Newest page first, or the page before message `beforeId` ("Load earlier messages")
-    public async Task<IReadOnlyList<ChatMessageResponse>?> GetMessagesAsync(string userId, int conversationId, long? beforeId)
+    public async Task<ServiceResult<IReadOnlyList<ChatMessageResponse>>> GetMessagesAsync(string userId, int conversationId, long? beforeId)
     {
         var access = await GetAccessAsync(userId, conversationId);
-        if (access is null) return null;
+        if (access is null)
+            return ServiceResult<IReadOnlyList<ChatMessageResponse>>.FailWithCode(ErrorCodes.NotFound, "Conversation not found.");
+        if (!access.CanRead)
+            return ServiceResult<IReadOnlyList<ChatMessageResponse>>.FailWithCode(ErrorCodes.PremiumRequired, PremiumMessage(access));
 
         var page = await db.Messages.AsNoTracking()
             .Where(m => m.ConversationId == conversationId && (beforeId == null || m.Id < beforeId))
@@ -81,13 +96,15 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
             .ToListAsync();
 
         page.Reverse();   // oldest at the top
-        return page;
+        return ServiceResult<IReadOnlyList<ChatMessageResponse>>.Ok(page);
     }
 
     public async Task<ServiceResult<SentMessageResult>> SendAsync(string userId, int conversationId, string body)
     {
         var access = await GetAccessAsync(userId, conversationId);
-        if (access is null) return ServiceResult<SentMessageResult>.Fail("Conversation not found.");
+        if (access is null) return ServiceResult<SentMessageResult>.FailWithCode(ErrorCodes.NotFound, "Conversation not found.");
+        if (!access.CanRead)
+            return ServiceResult<SentMessageResult>.FailWithCode(ErrorCodes.PremiumRequired, PremiumMessage(access));
         if (!access.CanSend) return ServiceResult<SentMessageResult>.Fail("You can no longer send messages in this conversation.");
 
         var text = body?.Trim() ?? string.Empty;
@@ -117,6 +134,9 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
     {
         var access = await GetAccessAsync(userId, conversationId);
         if (access is null) return null;
+
+        // Without Premium on both sides the messages were not shown, so they stay unread
+        if (!access.CanRead) return new ReadReceiptResult(conversationId, access.OtherUserId, DateTime.UtcNow, 0);
 
         var unread = await db.Messages
             .Where(m => m.ConversationId == conversationId && m.SenderProfileId != access.MyProfileId && m.ReadAtUtc == null)
@@ -163,7 +183,16 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
 
     // ---------- Helpers ----------
 
-    private record Access(int MyProfileId, string OtherUserId, bool CanSend);
+    private record Access(int MyProfileId, string OtherUserId, bool Connected, bool IAmPremium, bool OtherIsPremium)
+    {
+        public bool CanRead => IAmPremium && OtherIsPremium;
+        public bool CanSend => Connected && CanRead;
+    }
+
+    private static string PremiumMessage(Access access) =>
+        access.IAmPremium
+            ? "You have Premium. You can chat as soon as the other member also has Premium."
+            : "Both members need Premium to read and send messages.";
 
     // Null = this user is not in the conversation (or it is hidden because of a block)
     private async Task<Access?> GetAccessAsync(string userId, int conversationId)
@@ -188,8 +217,9 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence)
 
         if (await ProfileCards.IsBlockedAsync(db, me.Id, c.OtherId)) return null;
 
-        var accepted = c.ConnectionStatus == InterestStatus.Accepted;
-        return new Access(me.Id, c.OtherUserId, CanSend: accepted && !c.OtherSuspended && !me.IsSuspended);
+        var connected = c.ConnectionStatus == InterestStatus.Accepted && !c.OtherSuspended && !me.IsSuspended;
+        var premium = await PremiumAccess.UsersWhoCanChatAsync(db, [userId, c.OtherUserId]);
+        return new Access(me.Id, c.OtherUserId, connected, premium.Contains(userId), premium.Contains(c.OtherUserId));
     }
 
     private Task<int?> MyProfileIdAsync(string userId) =>

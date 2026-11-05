@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { ApiError } from '../services/api'
 import { profileApi, type MyProfile, type ProfileStatus } from '../services/profile'
 import { interestsApi, type InterestSummary } from '../services/interests'
+import { paymentsApi, type MySubscription } from '../services/payments'
 import { STATUS_LABELS } from '../utils/options'
 
 // What to tell the user for each profile status
@@ -28,9 +29,11 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<MyProfile | null>(null)
   const [error, setError] = useState<string[]>([])
   const [interests, setInterests] = useState<InterestSummary | null>(null)
+  const [plan, setPlan] = useState<MySubscription | null>(null)
 
   useEffect(() => {
     interestsApi.summary().then(setInterests).catch(() => setInterests(null))
+    paymentsApi.mine().then(setPlan).catch(() => setPlan(null))
   }, [])
 
   useEffect(() => {
@@ -117,6 +120,25 @@ export default function DashboardPage() {
           ) : (
             <p className="mt-2 text-sm text-ink-soft">Loading…</p>
           )}
+        </div>
+
+        <div className="rounded-2xl border bg-white p-5">
+          <p className="text-sm font-semibold text-ink">Your plan</p>
+          {plan?.isPremium && plan.premiumUntilUtc ? (
+            <p className="mt-1 text-sm text-ink-soft">
+              {plan.planName}, active until {new Date(plan.premiumUntilUtc).toLocaleDateString()}.
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-ink-soft">
+              Free. Upgrade to chat and see contact details of your matches. Both members need Premium to chat.
+            </p>
+          )}
+          <Link
+            to="/plans"
+            className="mt-4 inline-block rounded-full border border-gray-300 px-5 py-2 text-sm font-medium text-ink hover:bg-peach-50"
+          >
+            {plan?.isPremium ? 'Manage plan' : 'See plans'}
+          </Link>
         </div>
 
         <div className="rounded-2xl border bg-white p-5">

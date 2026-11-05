@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<SearchService>();
         services.AddScoped<InterestService>();
         services.AddScoped<ChatService>();
+        services.AddScoped<SubscriptionService>();
         return services;
     }
 }

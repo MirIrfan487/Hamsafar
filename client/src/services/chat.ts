@@ -13,11 +13,13 @@ export interface ChatMessage {
 export interface ConversationSummary {
   id: number
   otherProfile: ProfileCard
-  lastMessage: string | null
+  lastMessage: string | null // null unless both members have Premium
   lastMessageSenderProfileId: number | null
   lastMessageAtUtc: string | null
   unreadCount: number
   canSend: boolean
+  iAmPremium: boolean // BOTH members need Premium to read and send messages
+  otherIsPremium: boolean
   isOnline: boolean
 }
 
