@@ -198,7 +198,7 @@ export default function ProfileWizardPage() {
               type="button"
               onClick={submit}
               disabled={saving || !canSubmit}
-              className="rounded-full bg-accent-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-full bg-accent-500 px-6 py-2.5 text-sm font-semibold text-brand-900 hover:bg-accent-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? 'Submitting…' : 'Submit for approval'}
             </button>

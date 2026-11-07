@@ -82,7 +82,7 @@ export default function InterestsPage() {
               className={`flex-1 rounded-full px-3 py-2 text-sm font-medium ${active ? 'bg-white text-ink shadow-sm' : 'text-ink-soft hover:text-ink'}`}
             >
               {t.label}
-              {count ? <span className="ml-1.5 rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-white">{count}</span> : null}
+              {count ? <span className="ml-1.5 rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-brand-900">{count}</span> : null}
             </button>
           )
         })}
@@ -139,7 +139,7 @@ export default function InterestsPage() {
                         type="button"
                         disabled={busy}
                         onClick={() => act(it.id, () => interestsApi.accept(it.id))}
-                        className="rounded-full bg-accent-500 px-4 py-1.5 text-sm font-semibold text-white hover:bg-accent-600 disabled:opacity-60"
+                        className="rounded-full bg-accent-500 px-4 py-1.5 text-sm font-semibold text-brand-900 hover:bg-accent-400 disabled:opacity-60"
                       >
                         Accept
                       </button>

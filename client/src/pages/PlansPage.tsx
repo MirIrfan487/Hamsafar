@@ -15,7 +15,7 @@ const formatDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, 
 
 function Check() {
   return (
-    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-500 text-white">
+    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-500 text-brand-900">
       <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
         <path d="m5 10.5 3.2 3L15 6.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -53,10 +53,10 @@ export default function PlansPage() {
           amount: order.amountInPaise,
           currency: order.currency,
           order_id: order.orderId,
-          name: 'Matrimony',
+          name: 'Hamsafar',
           description: order.planName,
           prefill: { name: order.prefillName, email: order.prefillEmail },
-          theme: { color: '#5b16d9' },
+          theme: { color: '#0e1d36' },
           config: UPI_FIRST, // UPI shown first in the payment window
           // 3) Our server checks the payment with Razorpay before activating Premium
           handler: (response) => {
@@ -121,7 +121,7 @@ export default function PlansPage() {
         {plans === null && errors.length === 0 && <p className="text-ink-soft">Loading plans…</p>}
 
         {plans?.map((plan) => (
-          <section key={plan.code} className="rounded-2xl bg-brand-600 p-6 text-white shadow-[0_24px_60px_-24px_rgba(91,22,217,0.55)]">
+          <section key={plan.code} className="rounded-2xl bg-brand-600 p-6 text-white shadow-[0_24px_60px_-24px_rgba(14,29,54,0.55)]">
             <h2 className="text-lg font-semibold">{plan.name}</h2>
             <p className="mt-1 text-3xl font-bold">
               {formatRupees(plan.priceInPaise)}

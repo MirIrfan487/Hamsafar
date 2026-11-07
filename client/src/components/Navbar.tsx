@@ -9,6 +9,7 @@ const SECTION_LINKS = [
   { href: '/#why', label: 'Why us' },
   { href: '/#features', label: 'Features' },
   { href: '/#how-it-works', label: 'How it works' },
+  { href: '/#faq', label: 'Questions' },
 ]
 
 export default function Navbar() {
@@ -22,14 +23,14 @@ export default function Navbar() {
   }
 
   return (
-    <header className="border-b border-peach-100 bg-white">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Logo />
+    <header className="on-dark border-b border-white/10 bg-brand-900">
+      <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+        <Logo light />
 
-        <ul className="hidden items-center gap-7 text-sm font-medium text-ink-soft md:flex">
+        <ul className="hidden items-center gap-7 text-sm font-medium text-white/75 md:flex">
           {SECTION_LINKS.map((l) => (
             <li key={l.href}>
-              <a href={l.href} className="hover:text-brand-600">
+              <a href={l.href} className="hover:text-gold">
                 {l.label}
               </a>
             </li>
@@ -37,7 +38,7 @@ export default function Navbar() {
         </ul>
 
         {user ? (
-          <div className="flex items-center gap-3 text-sm sm:gap-4">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm sm:gap-x-4">
             {user.roles.includes('Admin') && (
               <Link to="/admin" className="rounded-full bg-brand-50 px-3 py-1 font-semibold text-brand-700 hover:bg-brand-100">
                 Admin
@@ -45,40 +46,40 @@ export default function Navbar() {
             )}
             {!isAdminOnly(user) && (
               <>
-              <Link to="/search" className="font-medium text-ink hover:text-brand-600">
+              <Link to="/search" className="font-medium text-white/90 hover:text-gold">
                 Search
               </Link>
-              <Link to="/interests" className="font-medium text-ink hover:text-brand-600">
+              <Link to="/interests" className="font-medium text-white/90 hover:text-gold">
                 Interests
               </Link>
-              <Link to="/chat" className="flex items-center gap-1 font-medium text-ink hover:text-brand-600">
+              <Link to="/chat" className="flex items-center gap-1 font-medium text-white/90 hover:text-gold">
                 Messages
                 {unreadCount > 0 && (
-                  <span className="rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-white" aria-label={`${unreadCount} unread`}>
+                  <span className="rounded-full bg-accent-500 px-1.5 text-xs font-semibold text-brand-900" aria-label={`${unreadCount} unread`}>
                     {unreadCount}
                   </span>
                 )}
               </Link>
-              <Link to="/dashboard" className="font-medium text-ink hover:text-brand-600">
+              <Link to="/dashboard" className="font-medium text-white/90 hover:text-gold">
                 {user.firstName || 'Dashboard'}
               </Link>
               </>
             )}
             <button
               onClick={handleLogout}
-              className="rounded-full border border-gray-300 px-4 py-2 font-medium text-ink hover:bg-peach-50"
+              className="whitespace-nowrap rounded-full border border-white/30 px-3 py-2 font-medium text-white hover:bg-white/10 sm:px-4"
             >
               Log out
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-sm sm:gap-4">
-            <Link to="/login" className="px-2 py-2 font-medium text-ink hover:text-brand-600">
+          <div className="flex items-center gap-2 text-xs sm:gap-4 sm:text-sm">
+            <Link to="/login" className="whitespace-nowrap rounded-full border border-white/30 px-3 py-2 font-medium text-white hover:bg-white/10 sm:px-4">
               Log in
             </Link>
             <Link
               to="/register"
-              className="rounded-full bg-brand-600 px-4 py-2 font-semibold text-white hover:bg-brand-700 sm:px-5"
+              className="whitespace-nowrap rounded-full bg-brand-600 px-3 py-2 font-semibold text-gold ring-1 ring-gold/40 hover:bg-brand-500 sm:px-5"
             >
               Register free
             </Link>

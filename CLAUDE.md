@@ -1,7 +1,8 @@
-# Matrimony Platform — Project Guide
+# Hamsafar (Matrimony Platform) — Project Guide
 
 ## About this project
-A Muslim matrimonial website. Users create profiles, search, send interests,
+Hamsafar is a Muslim matrimonial website. The brand name shows only in the UI; code namespaces, the
+folder, the database (MatrimonyDb) and JWT settings keep the name Matrimony on purpose. Users create profiles, search, send interests,
 chat after mutual acceptance, and pay for premium features.
 
 I am learning while building. Claude writes the code directly in this folder,
@@ -83,10 +84,18 @@ Update-Database -Project Matrimony.Persistence -StartupProject Matrimony.Api
 - React: http://localhost:5173 (Vite proxies /api to http://localhost:5080)
 
 ## Frontend design
-- Tokens in client/src/index.css (@theme): brand (violet #5b16d9) buttons/links, accent (rose #ec407a)
-  search button/checks/step numbers, peach backgrounds, sage leaves, ink text, dusk footer.
-- Fonts: Plus Jakarta Sans (all UI), Amiri (Arabic). Decorations in components/Decor.tsx (original SVGs).
+- Look: dark navy and gold (navbar, hero, verse, footer, auth panel); inner pages stay light with white cards.
+  The dashboard has its own navy welcome hero (interest counts in the framed panel), details below on ivory.
+  The search page uses the same hero (result count and sort in the framed panel), filters and results below on ivory.
+- Tokens in client/src/index.css (@theme): brand (navy; 600 buttons/links, 800-900 dark sections), accent (gold;
+  search button/checks/step numbers), peach (now ivory backgrounds), sage leaves, ink text, dusk footer.
+- Gold backgrounds always use dark text (text-brand-900), never text-white. Dark areas add the class on-dark
+  so keyboard focus shows in gold.
+- Fonts: Playfair Display (font-display: all h1 + home section titles), Plus Jakarta Sans (UI), Amiri (Arabic).
+  Decorations in components/Decor.tsx (original SVGs; HeroArch is the home hero picture).
 - Never show made-up statistics or reviews. Sample cards on the home page are illustrations (aria-hidden).
+- 3D effects are plain CSS, no library: components/Tilt3D.tsx (follows the mouse), components/Reveal3D.tsx (on scroll),
+  HeroArch layers. All movement sits inside the prefers-reduced-motion block in index.css; keep new animations there.
 
 ## Rules
 - Real working code only, no placeholders or fake logic.
@@ -152,6 +161,8 @@ include email, phone, exact DOB, or a hidden last name. Photo ids only when the 
 Frontend: /search (filters in URL; starts from own partner preferences), /profiles/:id, ProfileCard.
 Dev data: SampleProfiles seeds 10 approved profiles (sample.f1..f5 / sample.m1..m5 @sample.test,
 password123) when "SeedSampleProfiles": true in appsettings.Development.json. Never enable in production.
+Each sample also gets a dummy picture from Matrimony.Api/SampleData/Photos/<key>.png (original illustrations, never
+photos of real people), stored through IPhotoStorage, Approved, privacy AllMembers. Skipped if the profile has a photo.
 Phase 5 in progress: InterestService + InterestsController: GET /api/interests?box=Received|Sent|Connected,
 GET /summary, POST /api/interests {receiverProfileId, note}, POST /{id}/accept|reject|withdraw.
 Rules: sender must be Approved; receiver Approved, opposite gender, not blocked/suspended; max 20 per 24h;
@@ -168,6 +179,7 @@ SubClaimUserIdProvider maps Clients.User(id) to the "sub" claim. PresenceTracker
 implements IPresenceTracker. Can send only if interest Accepted, no block, nobody suspended; 30 msgs/minute.
 Frontend: @microsoft/signalr, hooks/useChat.tsx (ChatProvider: one connection, unreadCount, presence, on()),
 pages/ChatPage.tsx at /chat, /chat/:id, /chat?with=<profileId>. Vite proxies /hubs with ws: true.
+Display pieces (bubbles, day dividers, typing dots, openers, Premium lock) are in components/chat/ChatParts.tsx.
 Phase 7 in progress: Premium with Razorpay (test mode). SubscriptionService (Application) + IPaymentGateway
 -> RazorpayGateway (Infrastructure, HttpClient to api.razorpay.com/v1, Basic auth).
 Endpoints: GET /api/plans (public), GET /api/subscription/me, POST /api/payments/order {planCode},

@@ -26,3 +26,13 @@ export function formatChatTime(iso: string): string {
 export function formatMessageTime(iso: string): string {
   return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
+
+// Label between messages: "Today", "Yesterday", or "3 Nov 2026"
+export function formatDayLabel(iso: string): string {
+  const d = new Date(iso)
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (d.toDateString() === new Date().toDateString()) return 'Today'
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+}

@@ -48,7 +48,7 @@ export default function InterestActions({ profile, onChanged }: { profile: Profi
 
   const i = profile.interest
   const name = profile.displayName
-  const primary = 'rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-600 disabled:opacity-60'
+  const primary = 'rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-900 hover:bg-accent-400 disabled:opacity-60'
   const secondary = 'rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-ink hover:bg-peach-50 disabled:opacity-60'
 
   let content: ReactNode

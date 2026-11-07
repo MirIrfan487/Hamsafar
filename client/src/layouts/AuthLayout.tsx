@@ -8,7 +8,7 @@ export default function AuthLayout({ title, subtitle, children }: { title: strin
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
       {/* ---------- Message panel ---------- */}
-      <aside className="relative flex flex-col justify-between gap-8 overflow-hidden bg-linear-to-br from-brand-800 via-brand-600 to-dusk px-6 py-8 text-white sm:px-10 lg:px-14 lg:py-12">
+      <aside className="on-dark relative flex flex-col justify-between gap-8 overflow-hidden bg-linear-to-br from-brand-800 via-brand-600 to-dusk px-6 py-8 text-white sm:px-10 lg:px-14 lg:py-12">
         <Bloom className="pointer-events-none absolute -right-6 -top-6 w-40 opacity-15" petal="#ffffff" center="#ffffff" />
         <Bloom className="pointer-events-none absolute -bottom-10 left-10 hidden w-56 opacity-10 lg:block" petal="#ffffff" center="#ffffff" />
 
@@ -43,7 +43,7 @@ export default function AuthLayout({ title, subtitle, children }: { title: strin
         <Sprig className="pointer-events-none absolute -right-8 top-8 hidden w-44 opacity-70 sm:block" flip />
 
         <div className="relative w-full max-w-md">
-          <div className="rounded-2xl bg-white p-6 shadow-[0_10px_40px_-12px_rgba(91,22,217,0.18)] sm:p-8">
+          <div className="rounded-2xl bg-white p-6 shadow-[0_10px_40px_-12px_rgba(14,29,54,0.18)] sm:p-8">
             <h1 className="text-xl font-bold text-ink">{title}</h1>
             {subtitle && <p className="mt-1 text-sm text-ink-soft">{subtitle}</p>}
             <div className="mt-6">{children}</div>

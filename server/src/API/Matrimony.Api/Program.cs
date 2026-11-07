@@ -120,7 +120,7 @@ await SeedData.SeedRolesAsync(app.Services);
 // Development only: 10 approved sample profiles for testing search (see appsettings.Development.json)
 if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("SeedSampleProfiles"))
 {
-    await SampleProfiles.SeedAsync(app.Services);
+    await SampleProfiles.SeedAsync(app.Services, Path.Combine(app.Environment.ContentRootPath, "SampleData", "Photos"));
 }
 
 // Development only: an admin login for the admin panel (see "SeedAdmin" in appsettings.Development.json)
@@ -139,7 +139,7 @@ if (app.Environment.IsDevelopment())
     // Swagger UI at http://localhost:5080/swagger (development only)
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "Matrimony API v1");
+        options.SwaggerEndpoint("/openapi/v1.json", "Hamsafar API v1");
         options.RoutePrefix = "swagger";
     });
 }

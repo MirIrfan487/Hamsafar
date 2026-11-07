@@ -1,3 +1,4 @@
+using Matrimony.Application.Interfaces;
 using Matrimony.Domain.Constants;
 using Matrimony.Domain.Entities;
 using Matrimony.Domain.Enums;
@@ -10,6 +11,7 @@ namespace Matrimony.Persistence.Seed;
 // DEVELOPMENT ONLY: creates approved sample profiles so search can be tested.
 // Runs only when "SeedSampleProfiles": true (set in appsettings.Development.json).
 // All sample accounts use the password "password123" and emails ending in @sample.test.
+// Each one also gets a dummy picture from SampleData/Photos (<key>.png, original illustrations, not real people).
 public static class SampleProfiles
 {
     private const string Password = "password123";
@@ -42,7 +44,7 @@ public static class SampleProfiles
             "Lawyer at the High Court. Enjoys history and travel."),
     ];
 
-    public static async Task SeedAsync(IServiceProvider services)
+    public static async Task SeedAsync(IServiceProvider services, string photoFolder)
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -83,6 +85,31 @@ public static class SampleProfiles
                 Status = ProfileStatus.Approved,
                 PartnerPreference = new PartnerPreference { AgeMin = Math.Max(18, s.Age - 5), AgeMax = s.Age + 5 }
             });
+        }
+
+        await db.SaveChangesAsync();
+
+        await SeedPhotosAsync(db, scope.ServiceProvider.GetRequiredService<IPhotoStorage>(), photoFolder);
+    }
+
+    // Adds the dummy picture to sample profiles that have no photo yet, so it runs once per profile
+    // and never touches a photo uploaded by hand. It goes through IPhotoStorage like a real upload.
+    private static async Task SeedPhotosAsync(AppDbContext db, IPhotoStorage storage, string photoFolder)
+    {
+        foreach (var s in Samples)
+        {
+            var file = Path.Combine(photoFolder, $"{s.Key}.png");
+            if (!File.Exists(file)) continue;
+
+            var email = $"sample.{s.Key}@sample.test";
+            var profile = await db.Profiles.Include(p => p.Photos).FirstOrDefaultAsync(p => p.User.Email == email);
+            if (profile is null || profile.Photos.Count > 0) continue;
+
+            await using var image = File.OpenRead(file);
+            var storedName = await storage.SaveAsync(image);
+
+            profile.Photos.Add(new ProfilePhoto { FilePath = storedName, IsMain = true, Status = PhotoStatus.Approved });
+            profile.PhotoPrivacy = PhotoPrivacy.AllMembers;   // so the picture shows on search cards
         }
 
         await db.SaveChangesAsync();

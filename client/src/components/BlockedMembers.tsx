@@ -25,7 +25,7 @@ export default function BlockedMembers() {
   if (!list || list.length === 0) return null
 
   return (
-    <div className="rounded-2xl border bg-white p-5">
+    <div className="rounded-2xl border border-peach-200 bg-white p-5">
       <p className="text-sm font-semibold text-ink">Blocked members</p>
       <ul className="mt-2 divide-y divide-peach-100">
         {list.map((b) => (
