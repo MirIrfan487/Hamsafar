@@ -49,7 +49,7 @@ Hamsafar is a modern matrimonial web application designed to help individuals di
 
 ### 1. Clone Repository
 
-    git clone https://github.com/irfan000/Hamsafar.git
+    git clone https://github.com/MirIrfan487/Hamsafar.git
 
 ### 2. Navigate to Project
 
