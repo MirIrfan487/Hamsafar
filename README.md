@@ -1,44 +1,18 @@
 # Hamsafar 💍
-
 ### A Modern Matrimonial Platform
 
-Hamsafar is a modern matrimonial web application designed to help individuals discover compatible life partners through a clean, intuitive, and user-friendly platform.
-
-The application provides an organized environment for profile creation, partner discovery, interest management, and communication.
-
----
+Hamsafar is a modern matrimonial web application designed to help individuals discover compatible life partners through a clean, intuitive and user-friendly platform.
 
 ## ✨ Features
 
-### 👤 User Profiles
-- Create and manage matrimonial profiles.
-- Add personal and profile information.
-- Update profile details.
-
-### 🔍 Partner Discovery
-- Browse available matrimonial profiles.
-- Search for potential matches.
-- Explore profile information.
-
-### ❤️ Interest Management
-- Send interest requests.
-- Manage received interests.
-- Track connection requests.
-
-### 💬 Private Communication
-- Chat interface for connecting with other members.
-- Organized conversation experience.
-
-### 💎 Membership Plans
-- Membership plans interface.
-- Subscription-oriented platform structure.
-
-### 🛡️ Account Management
-- Blocked members management.
-- User account management.
-- Administrative functionality.
-
----
+- User Registration and Login
+- Matrimonial Profile Creation and Management
+- Browse and Search Profiles
+- Send and Receive Interest Requests
+- Private Chat Interface
+- Membership Plans
+- Blocked Members Management
+- Admin Functionality
 
 ## 🛠️ Technology Stack
 
@@ -53,121 +27,72 @@ The application provides an organized environment for profile creation, partner 
 - ASP.NET Core Web API
 - .NET
 
----
-
 ## 📁 Project Structure
 
-```text
-Matrimony/
-│
-├── client/
-│   ├── public/
-│   └── src/
-│       ├── components/
-│       ├── layouts/
-│       ├── pages/
-│       └── utils/
-│
-├── server/
-│   └── src/
-│       ├── API/
-│       ├── Application/
-│       ├── Core/
-│       └── External/
-│
-├── .claude/
-├── .gitignore
-├── CLAUDE.md
-└── README.md
-```
-
----
+    Hamsafar/
+    ├── client/
+    │   └── React Frontend
+    ├── server/
+    │   └── ASP.NET Core Backend
+    ├── .claude/
+    ├── .gitignore
+    ├── CLAUDE.md
+    └── README.md
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-Make sure you have installed:
-
 - Node.js
 - npm
 - .NET SDK
 
-### 1. Clone the Repository
+### 1. Clone Repository
 
-```bash
-git clone https://github.com/irfan000/Hamsafar.git
-```
+    git clone https://github.com/irfan000/Hamsafar.git
 
-### 2. Navigate to the Project
+### 2. Navigate to Project
 
-```bash
-cd Hamsafar
-```
+    cd Hamsafar
 
-### 3. Setup Frontend
+### 3. Install Frontend Dependencies
 
-```bash
-cd client
-npm install
-npm run dev
-```
+    cd client
+    npm install
 
-The frontend development server will normally be available at:
+### 4. Start Frontend
 
-```text
-http://localhost:5173
-```
+    npm run dev
 
-### 4. Setup Backend
+Frontend normally runs at:
+
+    http://localhost:5173
+
+### 5. Run Backend
 
 Open another terminal from the project root.
 
-Restore the backend dependencies:
+    dotnet restore server/src/API/Matrimony.Api/Matrimony.Api.csproj
 
-```bash
-dotnet restore server/src/API/Matrimony.Api/Matrimony.Api.csproj
-```
+    dotnet run --project server/src/API/Matrimony.Api/Matrimony.Api.csproj
 
-Configure the required application settings and environment variables before running the API.
-
-Run the backend:
-
-```bash
-dotnet run --project server/src/API/Matrimony.Api/Matrimony.Api.csproj
-```
-
----
+Configure your database connection and required application settings before running the backend.
 
 ## 🔐 Security
 
-- Never expose database credentials.
-- Keep API keys and JWT secrets private.
-- Do not commit production credentials.
-- Use environment-specific configuration.
-
----
-
-## 🗺️ Project Goals
-
-Hamsafar aims to provide a convenient and reliable matrimonial platform with an emphasis on:
-
-- Simple user experience.
-- Meaningful connections.
-- Organized profile discovery.
-- Secure communication.
-- Scalable application architecture.
-
----
+- Keep database credentials private.
+- Never upload API keys or passwords.
+- Protect JWT secret keys.
+- Use environment variables for sensitive configuration.
 
 ## 👨‍💻 Developer
 
 **Irfan Ahmed Mir**
 
-GitHub: [@irfan000](https://github.com/irfan000)
+GitHub: https://github.com/irfan000
 
-Project: [Hamsafar](https://github.com/irfan000/Hamsafar)
+Repository: https://github.com/irfan000/Hamsafar
 
 ---
 
-### Building Hamsafar with the goal of making meaningful connections easier.
+Building Hamsafar with the goal of making meaningful connections easier.
