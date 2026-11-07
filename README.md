@@ -89,7 +89,7 @@ Configure your database connection and required application settings before runn
 
 **Irfan Ahmed Mir**
 
-GitHub: https://github.com/irfan000
+GitHub: https://github.com/MirIrfan487
 
 Repository: https://github.com/irfan000/Hamsafar
 
