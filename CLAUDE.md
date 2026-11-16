@@ -277,7 +277,10 @@ Phase 9 in progress (testing and deployment).
   Helpers/FakePaymentGateway (ApprovePayment, RemotePayments, signature sets; no internet). The test project
   also references Infrastructure: Infrastructure/RazorpaySignatureTests test the REAL HMAC checks.
   Helpers/FakePhotoStorage (any file "opens"), TestData.AddPhotoAsync, AddMemberAsync(photoPrivacy:).
+  Helpers/TestIdentity: real UserManager on the test context, AddAdminAsync (Admin role, no profile).
   Done: AgeRules, InterestService, ChatService, SubscriptionService, RazorpaySignature, PhotoAccess,
-  ProfilePrivacy (103 tests). Next tests: admin rules.
+  ProfilePrivacy, AdminService, SafetyService (128 tests). The main rules from CLAUDE.md are covered.
+  Not covered yet: ProfileService (wizard/submit), PhotoService upload limits, AuthService register/login,
+  controllers/HTTP (would need WebApplicationFactory).
   Leftover: Application/Services/PremiumAccess.cs only holds a "Delete this file" comment (safe to delete).
 Next: more tests, then deployment.
