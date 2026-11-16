@@ -8,6 +8,7 @@ using Matrimony.Api.Extensions;
 using Matrimony.Api.Hubs;
 using Matrimony.Application.Common;
 using Matrimony.Application.Interfaces;
+using Matrimony.Application.Interfaces.Services;
 using Matrimony.Infrastructure;
 using Matrimony.Infrastructure.Authentication;
 using Matrimony.Persistence;
@@ -101,6 +102,17 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
                 if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
                     context.Token = token;
                 return Task.CompletedTask;
+            },
+
+            // The token itself is valid (signature, expiry). Also check the ACCOUNT is still allowed in:
+            // a token stays valid for 24h, so without this a member suspended by an admin (or a deleted
+            // account) could keep using the API until it expires. Fail = 401, and the app logs them out.
+            OnTokenValidated = async context =>
+            {
+                var userId = context.Principal?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                var auth = context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
+                if (userId is null || !await auth.IsAccountActiveAsync(userId))
+                    context.Fail("This account is suspended or no longer exists.");
             }
         };
     });

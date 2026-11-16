@@ -114,6 +114,13 @@ public class AuthService(UserManager<AppUser> userManager, IAppDbContext db, ITo
         return await BuildCurrentUserAsync(user, roles);
     }
 
+    // Runs on EVERY request that carries a token, so it reads one column only (primary key lookup)
+    public async Task<bool> IsAccountActiveAsync(string userId) =>
+        await userManager.Users
+            .Where(u => u.Id == userId)
+            .Select(u => !u.IsSuspended)
+            .FirstOrDefaultAsync();   // no row (account deleted) -> false
+
     private async Task<CurrentUserResponse> BuildCurrentUserAsync(AppUser user, IList<string> roles)
     {
         var firstName = await db.Profiles

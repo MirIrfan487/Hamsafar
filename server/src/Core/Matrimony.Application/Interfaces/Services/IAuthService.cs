@@ -11,4 +11,7 @@ public interface IAuthService
     Task<AuthResult> RegisterAsync(RegisterRequest request);
     Task<LoginResult> LoginAsync(LoginRequest request);
     Task<CurrentUserResponse?> GetCurrentUserAsync(string userId);
+
+    // false if the account was deleted or suspended. Checked on every request with a token (Program.cs).
+    Task<bool> IsAccountActiveAsync(string userId);
 }

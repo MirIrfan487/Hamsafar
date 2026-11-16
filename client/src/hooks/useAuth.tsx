@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ApiError, tokenStorage } from '../services/api'
+import { ApiError, setUnauthorizedHandler, tokenStorage } from '../services/api'
 import { stopPushNotifications } from '../utils/pushNotifications'
 import { authApi, type CurrentUser } from '../services/auth'
 
@@ -47,6 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenStorage.clear()
     setUser(null)
   }, [])
+
+  // Any logged-in request answered with 401 (token expired, account suspended or deleted) -> log out.
+  // Protected pages then send the member to /login. The token check stops a loop: logout's own
+  // request can also get 401, but by then the token is already gone.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      if (tokenStorage.get()) logout()
+    })
+    return () => setUnauthorizedHandler(null)
+  }, [logout])
 
   const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout])
 

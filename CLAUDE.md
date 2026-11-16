@@ -203,8 +203,7 @@ audit) and SafetyController (POST /api/profiles/{id}/report {reason, details}, P
 GET /api/blocks). Every admin action writes an AdminAuditLogs row (migration AddAdminAuditLog).
 Rules: reject needs a reason (members see the profile reason on their dashboard); an admin cannot suspend
 themselves or another admin; one open report per reporter -> reported pair. Suspended members cannot log in
-and disappear from search/interests/chat, but an already-issued JWT keeps working for other calls until it
-expires (max 24h). Fix in Phase 9 if needed (check IsSuspended in JwtBearerEvents.OnTokenValidated).
+and disappear from search/interests/chat; their existing JWT is refused too (Phase 9, see below).
 Dev admin: "SeedAdmin" {Email, Password} in appsettings.Development.json -> SeedData.SeedAdminAsync
 (admin@matrimony.test / admin12345, no profile). Never in production. Make a real admin with SQL:
 INSERT INTO AspNetUserRoles (UserId, RoleId) SELECT u.Id, r.Id FROM AspNetUsers u, AspNetRoles r
@@ -263,4 +262,11 @@ reads android/keystore.properties (git-ignored; see keystore.properties.example)
 npm run build:android:release uses .env.android-release (git-ignored); vite.config.ts refuses non-https VITE_API_URL.
 Before the first Play Store upload: deploy the API on https (Phase 9), raise versionCode/versionName in
 android/app/build.gradle for every upload, Build > Generate Signed App Bundle (.aab).
-Next: Phase 9 — testing and deployment (retarget to net10.0 first: .NET 9 support ends 10 Nov 2026).
+Phase 9 in progress (testing and deployment).
+- .NET 10 retarget BLOCKED: only the .NET 9 SDK is installed and VS 2022 cannot build net10.0 (needs VS 2026 or
+  the .NET 10 SDK). .NET 9 support ended 10 Nov 2026, so do this as soon as the tools are installed.
+- Suspended/deleted accounts: JwtBearerEvents.OnTokenValidated (Program.cs) calls IAuthService.IsAccountActiveAsync
+  (one-column PK lookup per request with a token) -> Fail = 401. Client: api.ts setUnauthorizedHandler; AuthProvider
+  logs out on any 401 of an auth:true request. Tested 2026-11-16 (suspend -> old token 401, unsuspend -> 200).
+- .claude/launch.json has "api" (dotnet run, http profile, port 5080) next to "client".
+Next: automated tests (xUnit), then deployment.

@@ -76,6 +76,13 @@ function authHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+// Called when a logged-in request gets 401 (token expired, or the account was suspended / deleted).
+// AuthProvider (hooks/useAuth.tsx) sets it to "log out".
+let onUnauthorized: (() => void) | null = null
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorized = handler
+}
+
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const isForm = options.body instanceof FormData
   const headers: Record<string, string> = { Accept: 'application/json', ...(options.auth ? authHeader() : {}) }
@@ -89,6 +96,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
   })
 
+  if (res.status === 401 && options.auth) onUnauthorized?.()
   if (!res.ok) throw new ApiError(res.status, await readErrors(res))
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
