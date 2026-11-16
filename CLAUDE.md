@@ -269,4 +269,9 @@ Phase 9 in progress (testing and deployment).
   (one-column PK lookup per request with a token) -> Fail = 401. Client: api.ts setUnauthorizedHandler; AuthProvider
   logs out on any 401 of an auth:true request. Tested 2026-11-16 (suspend -> old token 401, unsuspend -> 200).
 - .claude/launch.json has "api" (dotnet run, http profile, port 5080) next to "client".
-Next: automated tests (xUnit), then deployment.
+- Tests: server/tests/Matrimony.Tests (xUnit, in the solution under "tests"). Run "dotnet test" in server/ or
+  Test Explorer. Helpers/TestDatabase = real AppDbContext on in-memory SQLite (EnsureCreated, never MatrimonyDb);
+  NewContext() per "request". Helpers/TestData.AddMemberAsync, Helpers/FakeNotificationService (records pushes).
+  Done: AgeRulesTests, InterestServiceTests (21 tests). Next tests: chat + Premium, photo/contact privacy,
+  Razorpay verification (signature, amount, double activation), admin rules.
+Next: more tests, then deployment.
