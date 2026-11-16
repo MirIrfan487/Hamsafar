@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\Matrimony.Application\Matrimony.Application.csproj" />
     <ProjectReference Include="..\..\src\External\Matrimony.Persistence\Matrimony.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\External\Matrimony.Infrastructure\Matrimony.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

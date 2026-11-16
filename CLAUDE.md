@@ -274,7 +274,9 @@ Phase 9 in progress (testing and deployment).
   NewContext() per "request". Helpers/TestData.AddMemberAsync, Helpers/FakeNotificationService (records pushes).
   TestData also has AddPremiumAsync (seeded plan Id 1) and ConnectAsync (accepted interest + conversation);
   Helpers/FakePresenceTracker (Online set).
-  Done: AgeRulesTests, InterestServiceTests, ChatServiceTests (38 tests). Next tests: photo/contact privacy,
-  Razorpay verification (signature, amount, double activation), admin rules.
+  Helpers/FakePaymentGateway (ApprovePayment, RemotePayments, signature sets; no internet). The test project
+  also references Infrastructure: Infrastructure/RazorpaySignatureTests test the REAL HMAC checks.
+  Done: AgeRules, InterestService, ChatService, SubscriptionService, RazorpaySignature (67 tests).
+  Next tests: photo/contact privacy, admin rules.
   Leftover: Application/Services/PremiumAccess.cs only holds a "Delete this file" comment (safe to delete).
 Next: more tests, then deployment.
