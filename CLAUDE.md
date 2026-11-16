@@ -213,4 +213,54 @@ Frontend: components/AdminRoute.tsx, pages/admin/* at /admin (Overview, Profiles
 Members, Activity), "Admin" link in the navbar, admins land on /admin after login.
 Members: components/SafetyActions.tsx (Report / Block on /profiles/:id), components/BlockedMembers.tsx
 (dashboard, Unblock).
+Android app (Capacitor, wraps the same React app) in progress. Step 1 DONE: services/api.ts API_BASE from
+VITE_API_URL (empty for the website; client/.env.android for the app, see .env.android.example), used by
+apiRequest, apiBlob and the SignalR hub URL. Server CORS policy "MobileApp" from appsettings "Cors:AllowedOrigins"
+(http://localhost, https://localhost = the Capacitor WebView origins), AllowCredentials for SignalR.
+Step 2 DONE (not yet built: needs Android Studio): Capacitor 8 (@capacitor/core, android; cli dev), appId
+com.hamsafar.app, client/capacitor.config.json (JSON, because a .ts config fails in a "type": "module" project
+on Node 26), native project in client/android. (http for the local API is debug-only now, see Step 9.)
+Scripts: npm run build:android (vite --mode android + cap sync), npm run open:android (Android Studio).
+Needs Android Studio (SDK + its bundled JDK 21); the old JAVA_HOME (JDK 16) is too old for Gradle.
+Runs on the emulator (tested by the user 2026-11-16).
+Step 3: utils/nativeApp.ts (isNativeApp, setupBackButton via @capacitor/app, called in main.tsx): Back on
+/, /dashboard, /admin minimizes the app; elsewhere history.back(). Native-only code goes in utils/nativeApp.ts.
+Step 4: Razorpay in the app with Razorpay's own plugin capacitor-razorpay (native Android SDK com.razorpay:checkout).
+utils/razorpay.ts payWithRazorpay(options, onFailedAttempt) -> ids | null (closed); native SDK in the app,
+checkout.js on the website. PlansPage awaits it, then POST /payments/verify as before (server still decides).
+Step 5: photos. Gallery picking already worked (Capacitor maps <input type="file"> to the Android picker).
+utils/shrinkPhoto.ts: photos over 5 MB are redrawn in the browser to max 1600 px JPEG (upright, no EXIF) before
+upload, on website and app. StepPhotos has a "Take a photo" tile in the app only (input capture="user").
+Step 6: edge-to-edge. index.html viewport-fit=cover; Navbar header pt-[env(safe-area-inset-top)], Footer and
+AuthLayout main pad env(safe-area-inset-bottom), AuthLayout aside pads the top. capacitor.config.json plugins.SystemBars
+{insetsHandling css, style DARK = light icons over navy}. New full-height/fixed UI must add these insets too.
+Step 7: app icon + splash. Sources client/assets/*.svg (the Logo rings, white + gold on navy #0a1526):
+icon-foreground (adaptive, rings in the safe centre), icon-background, icon-only (Android 7), splash, splash-dark.
+npm run icons:android (@capacitor/assets) writes all sizes into android/app/src/main/res. styles.xml
+windowSplashScreenBackground = navy for the Android 12+ system splash.
+Push notifications (Firebase Cloud Messaging) in progress. Step 8a: DeviceTokens table (DeviceToken entity:
+UserId -> AspNetUsers cascade, Token unique max 512, Platform Android|Ios, LastSeenAtUtc), migration AddDeviceTokens.
+DeviceTokenService: register moves an existing token to the logged-in account, max 10 phones per user;
+unregister only by owner. DevicesController [Authorize]: POST /api/devices {token, platform}, DELETE /api/devices {token}.
+Step 8b: sending. IPushSender (Application/Interfaces) -> FirebasePushSender (Infrastructure/Push, FirebaseAdmin
+package, singleton; returns dead tokens). Firebase:CredentialsPath = path of the service-account JSON (User Secrets /
+env Firebase__CredentialsPath; file never in Git); empty = pushes off, app still works. NotificationService
+(NotifyUserAsync / NotifyProfileAsync, never throws, skips suspended, deletes dead tokens). PushMessage(Title, Body,
+Url, Tag): Url = app page opened on tap (data "url"). Lock-screen privacy: no names or message text in pushes.
+Sent on: interest sent (receiver), interest accepted (sender), new message (recipient, only if not online in
+PresenceTracker; tag chat-{id}). Rejections are not pushed.
+Step 8c: app side. @capacitor/push-notifications; utils/pushNotifications.ts (startPushNotifications: channel
+"hamsafar", permission, register -> POST /api/devices, token kept in localStorage "matrimony_push_token"; tap opens
+data.url if it starts with "/"; stopPushNotifications -> DELETE /api/devices, called in useAuth.logout BEFORE the
+JWT is cleared). components/PushSetup.tsx (in main.tsx) starts it when a user is logged in. services/devices.ts.
+AndroidManifest: POST_NOTIFICATIONS, default icon drawable/ic_stat_hamsafar (white rings vector), color, channel.
+Needs client/android/app/google-services.json (git-ignored) or Gradle skips Firebase and push does nothing.
+Note: Tailwind scans comments too; never write class-like text such as "pt-[...]" in comments.
+Step 9: release build setup. http allowed ONLY in debug builds: android/app/src/debug/AndroidManifest.xml
+(usesCleartextTraffic) + MainActivity sets mixed content only when the app is debuggable. capacitor.config.json has
+no cleartext/allowMixedContent (cap sync would put cleartext into every build). Signing: android/app/build.gradle
+reads android/keystore.properties (git-ignored; see keystore.properties.example), .jks kept outside the repo.
+npm run build:android:release uses .env.android-release (git-ignored); vite.config.ts refuses non-https VITE_API_URL.
+Before the first Play Store upload: deploy the API on https (Phase 9), raise versionCode/versionName in
+android/app/build.gradle for every upload, Build > Generate Signed App Bundle (.aab).
 Next: Phase 9 — testing and deployment (retarget to net10.0 first: .NET 9 support ends 10 Nov 2026).

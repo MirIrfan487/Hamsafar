@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: in the Android app the page also fills the area behind the status bar and the
+         gesture bar. Layouts add env(safe-area-inset-*) padding so nothing hides under them (0 on a normal website). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="A safe matrimonial platform for Muslim individuals and families." />
     <title>Hamsafar — find a spouse who shares your deen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

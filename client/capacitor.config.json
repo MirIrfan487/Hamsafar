@@ -1,0 +1,14 @@
+{
+  "appId": "com.hamsafar.app",
+  "appName": "Hamsafar",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK"
+    }
+  }
+}

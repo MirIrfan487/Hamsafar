@@ -8,7 +8,7 @@ export default function AuthLayout({ title, subtitle, children }: { title: strin
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
       {/* ---------- Message panel ---------- */}
-      <aside className="on-dark relative flex flex-col justify-between gap-8 overflow-hidden bg-linear-to-br from-brand-800 via-brand-600 to-dusk px-6 py-8 text-white sm:px-10 lg:px-14 lg:py-12">
+      <aside className="on-dark relative flex flex-col justify-between gap-8 overflow-hidden bg-linear-to-br from-brand-800 via-brand-600 to-dusk px-6 py-8 pt-[calc(2rem+env(safe-area-inset-top))] text-white sm:px-10 lg:px-14 lg:py-12">
         <Bloom className="pointer-events-none absolute -right-6 -top-6 w-40 opacity-15" petal="#ffffff" center="#ffffff" />
         <Bloom className="pointer-events-none absolute -bottom-10 left-10 hidden w-56 opacity-10 lg:block" petal="#ffffff" center="#ffffff" />
 
@@ -39,7 +39,7 @@ export default function AuthLayout({ title, subtitle, children }: { title: strin
       </aside>
 
       {/* ---------- Form ---------- */}
-      <main className="relative flex items-center justify-center overflow-hidden bg-peach-100 px-4 py-10">
+      <main className="relative flex items-center justify-center overflow-hidden bg-peach-100 px-4 py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">
         <Sprig className="pointer-events-none absolute -right-8 top-8 hidden w-44 opacity-70 sm:block" flip />
 
         <div className="relative w-full max-w-md">

@@ -21,6 +21,7 @@ public interface IAppDbContext
     DbSet<Report> Reports { get; }
     DbSet<Block> Blocks { get; }
     DbSet<AdminAuditLog> AdminAuditLogs { get; }
+    DbSet<DeviceToken> DeviceTokens { get; }
 
     DatabaseFacade Database { get; }   // for transactions and connection checks
 

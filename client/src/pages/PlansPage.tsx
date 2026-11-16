@@ -4,7 +4,7 @@ import ErrorAlert from '../components/ErrorAlert'
 import { useAuth } from '../hooks/useAuth'
 import { ApiError } from '../services/api'
 import { formatRupees, paymentsApi, type MySubscription, type Plan } from '../services/payments'
-import { UPI_FIRST, loadRazorpay, openCheckout } from '../utils/razorpay'
+import { UPI_FIRST, payWithRazorpay } from '../utils/razorpay'
 
 const FREE_FEATURES = ['Create a profile', 'Search profiles', 'Send and receive interests']
 
@@ -44,10 +44,9 @@ export default function PlansPage() {
     try {
       // 1) Our server creates the order (it decides the price, not the browser)
       const order = await paymentsApi.createOrder(plan.code)
-      if (!(await loadRazorpay())) throw new Error('Could not load Razorpay. Check your internet connection.')
 
-      // 2) Razorpay's own payment window
-      openCheckout(
+      // 2) Razorpay's own payment window (native SDK in the Android app, checkout.js on the website)
+      const paid = await payWithRazorpay(
         {
           key: order.keyId,
           amount: order.amountInPaise,
@@ -58,23 +57,19 @@ export default function PlansPage() {
           prefill: { name: order.prefillName, email: order.prefillEmail },
           theme: { color: '#0e1d36' },
           config: UPI_FIRST, // UPI shown first in the payment window
-          // 3) Our server checks the payment with Razorpay before activating Premium
-          handler: (response) => {
-            paymentsApi
-              .verify(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature)
-              .then((updated) => {
-                setMine(updated)
-                setSuccess(true)
-              })
-              .catch((err) => setErrors(errorMessages(err)))
-              .finally(() => setBusy(false))
-          },
-          modal: { ondismiss: () => setBusy(false) },
         },
-        (message) => setErrors([`Payment failed: ${message}`]),
+        (message) => setErrors([message]),
       )
+      if (!paid) return // closed without paying
+
+      // 3) Our server checks the payment with Razorpay before activating Premium
+      setErrors([])
+      const updated = await paymentsApi.verify(paid.razorpay_order_id, paid.razorpay_payment_id, paid.razorpay_signature)
+      setMine(updated)
+      setSuccess(true)
     } catch (err) {
       setErrors(err instanceof Error && !(err instanceof ApiError) ? [err.message] : errorMessages(err))
+    } finally {
       setBusy(false)
     }
   }

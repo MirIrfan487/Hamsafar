@@ -112,6 +112,23 @@ builder.Services.AddSignalR()
 builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();   // Clients.User(id) = our user id
 builder.Services.AddSingleton<IPresenceTracker, PresenceTracker>();          // who is online (one shared instance)
 
+// ---------- CORS (the Android app) ----------
+// The website calls the API from the same site (Vite proxy / same domain), so it needs no CORS.
+// The Android app (Capacitor) runs on its own origin inside the phone ("http://localhost" or
+// "https://localhost"), so the browser engine asks the API first whether that origin is allowed.
+// Allowed origins live in appsettings.json -> "Cors:AllowedOrigins".
+// AllowCredentials is needed by SignalR; it only works with an exact origin list (never "*").
+const string MobileAppCors = "MobileApp";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MobileAppCors, policy => policy
+        .WithOrigins(allowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
+
 var app = builder.Build();
 
 // Create the Member/Admin roles if they don't exist yet
@@ -150,6 +167,7 @@ else
     app.UseHttpsRedirection();
 }
 
+app.UseCors(MobileAppCors); // 0) answer the Android app's CORS check before auth
 app.UseAuthentication();   // 1) who are you? (reads the token)
 app.UseAuthorization();    // 2) are you allowed? (checks [Authorize])
 

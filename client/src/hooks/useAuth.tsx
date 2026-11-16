@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ApiError, tokenStorage } from '../services/api'
+import { stopPushNotifications } from '../utils/pushNotifications'
 import { authApi, type CurrentUser } from '../services/auth'
 
 // AuthContext shares "who is logged in" with every page.
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
+    stopPushNotifications() // Android app: this phone stops getting our notifications (needs the token, so first)
     tokenStorage.clear()
     setUser(null)
   }, [])

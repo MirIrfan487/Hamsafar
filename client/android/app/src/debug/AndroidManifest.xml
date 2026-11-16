@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DEBUG BUILDS ONLY (the ones Android Studio's Run button makes). Android merges this into the main manifest.
+     Allows plain http:// so the app can reach the API on your PC (http://10.0.2.2:5080).
+     Release builds (Play Store) do not get this file, so they can only use https. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>

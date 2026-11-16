@@ -103,3 +103,10 @@ public enum ReportStatus
     ActionTaken,
     Dismissed
 }
+
+// Which kind of device a push token belongs to (only Android today)
+public enum DevicePlatform
+{
+    Android,
+    Ios
+}

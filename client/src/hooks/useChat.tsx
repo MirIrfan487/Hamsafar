@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { HubConnectionBuilder, HubConnectionState, LogLevel, type HubConnection } from '@microsoft/signalr'
 import { useAuth } from './useAuth'
 import { isAdminOnly } from '../services/auth'
-import { tokenStorage } from '../services/api'
+import { API_BASE, tokenStorage } from '../services/api'
 import { chatApi } from '../services/chat'
 
 // One live connection to /hubs/chat for the whole app, opened after login.
@@ -39,7 +39,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (!user || isAdminOnly(user)) return // admin-only accounts have no chats
 
     const connection = new HubConnectionBuilder()
-      .withUrl('/hubs/chat', { accessTokenFactory: () => tokenStorage.get() ?? '' })
+      .withUrl(`${API_BASE}/hubs/chat`, { accessTokenFactory: () => tokenStorage.get() ?? '' })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
       .build()

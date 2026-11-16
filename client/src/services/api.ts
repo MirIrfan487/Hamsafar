@@ -1,6 +1,13 @@
 // Shared helper for every call to the backend.
 // The Vite proxy (vite.config.ts) sends /api/... to http://localhost:5080/api/...
 
+// Where the server lives.
+//  - Website (npm run dev / same domain in production): empty, so calls go to "/api/..." on the same site.
+//  - Android app (Capacitor): the app runs inside the phone, so it needs the full server address,
+//    e.g. VITE_API_URL=http://10.0.2.2:5080 (10.0.2.2 = "my PC" as seen from the Android emulator).
+// Set it in client/.env.android (see .env.android.example). No trailing slash.
+export const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
+
 const TOKEN_KEY = 'matrimony_token'
 
 // Where we keep the JWT between page reloads.
@@ -76,7 +83,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   // For FormData the browser sets Content-Type itself (with the multipart boundary)
   if (options.body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
 
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}/api${path}`, {
     method: options.method ?? 'GET',
     headers,
     body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
@@ -90,7 +97,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 // For images that need login: <img src> cannot send our token, so we download the file
 // with the token and show it from memory (see components/SecurePhoto.tsx)
 export async function apiBlob(path: string): Promise<Blob> {
-  const res = await fetch(`/api${path}`, { headers: authHeader() })
+  const res = await fetch(`${API_BASE}/api${path}`, { headers: authHeader() })
   if (!res.ok) throw new ApiError(res.status, [`Request failed (${res.status})`])
   return res.blob()
 }

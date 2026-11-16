@@ -4,7 +4,9 @@ import SecurePhoto from '../SecurePhoto'
 import { ApiError } from '../../services/api'
 import { ALLOWED_PHOTO_TYPES, MAX_PHOTOS, MAX_PHOTO_BYTES, photosApi, type MyPhoto, type PhotoStatus } from '../../services/photos'
 import type { PhotoPrivacy } from '../../services/profile'
+import { isNativeApp } from '../../utils/nativeApp'
 import { PHOTO_PRIVACY_OPTIONS, labelFor } from '../../utils/options'
+import { shrinkPhoto } from '../../utils/shrinkPhoto'
 
 const STATUS_BADGE: Record<PhotoStatus, { text: string; className: string }> = {
   Pending: { text: 'Waiting for approval', className: 'bg-amber-100 text-amber-900' },
@@ -22,6 +24,7 @@ export default function StepPhotos({ photoPrivacy, onChangePrivacy }: { photoPri
   const [busy, setBusy] = useState<'upload' | number | null>(null) // what is being worked on right now
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
+  const cameraInput = useRef<HTMLInputElement>(null)
 
   const reload = async () => setPhotos(await photosApi.list())
 
@@ -30,17 +33,25 @@ export default function StepPhotos({ photoPrivacy, onChangePrivacy }: { photoPri
   }, [])
 
   const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const picked = e.target.files?.[0]
     e.target.value = '' // so the same file can be chosen again
-    if (!file) return
+    if (!picked) return
 
     // Quick checks in the browser; the server checks again (and checks it is a real image)
-    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) return setErrors(['Only JPG, PNG or WEBP photos are allowed.'])
-    if (file.size > MAX_PHOTO_BYTES) return setErrors(['Photo must be 5 MB or smaller.'])
+    if (!ALLOWED_PHOTO_TYPES.includes(picked.type)) return setErrors(['Only JPG, PNG or WEBP photos are allowed.'])
 
     setErrors([])
     setBusy('upload')
     try {
+      // Big phone photos are made smaller first (see utils/shrinkPhoto.ts)
+      let file: File
+      try {
+        file = await shrinkPhoto(picked, MAX_PHOTO_BYTES)
+      } catch {
+        return setErrors(['Could not read this photo. Please try another one.'])
+      }
+      if (file.size > MAX_PHOTO_BYTES) return setErrors(['Photo must be 5 MB or smaller.'])
+
       await photosApi.upload(file)
       await reload()
     } catch (err) {
@@ -158,8 +169,26 @@ export default function StepPhotos({ photoPrivacy, onChangePrivacy }: { photoPri
                 </svg>
                 {busy === 'upload' ? 'Uploading…' : 'Add photo'}
                 <span className="text-xs font-normal text-ink-soft">
-                  {count} of {MAX_PHOTOS}, JPG/PNG/WEBP, max 5 MB
+                  {count} of {MAX_PHOTOS}, JPG/PNG/WEBP
                 </span>
+              </button>
+            </li>
+          )}
+
+          {/* Android app only: open the camera directly */}
+          {canAdd && isNativeApp && (
+            <li>
+              <button
+                type="button"
+                onClick={() => cameraInput.current?.click()}
+                disabled={busy !== null}
+                className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 text-sm font-medium text-brand-700 hover:bg-brand-50 disabled:opacity-60"
+              >
+                <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <path d="M4 8h3l1.5-2h7L17 8h3v11H4z" strokeLinejoin="round" />
+                  <circle cx="12" cy="13" r="3.5" />
+                </svg>
+                Take a photo
               </button>
             </li>
           )}
@@ -167,6 +196,8 @@ export default function StepPhotos({ photoPrivacy, onChangePrivacy }: { photoPri
       )}
 
       <input ref={fileInput} type="file" accept={ALLOWED_PHOTO_TYPES.join(',')} className="hidden" onChange={handleFile} />
+      {/* capture = open the camera instead of the gallery (Capacitor turns this into the Android camera) */}
+      <input ref={cameraInput} type="file" accept="image/*" capture="user" className="hidden" onChange={handleFile} />
     </div>
   )
 }

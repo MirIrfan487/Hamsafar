@@ -1,6 +1,7 @@
 using Matrimony.Application.Interfaces;
 using Matrimony.Infrastructure.Authentication;
 using Matrimony.Infrastructure.Payments;
+using Matrimony.Infrastructure.Push;
 using Matrimony.Infrastructure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,10 @@ public static class DependencyInjection
             client.BaseAddress = new Uri("https://api.razorpay.com/v1/");
             client.Timeout = TimeSpan.FromSeconds(20);
         });
+
+        // Push notifications (Firebase Cloud Messaging). Singleton: one Firebase connection for the whole app.
+        services.Configure<FirebaseSettings>(configuration.GetSection("Firebase"));
+        services.AddSingleton<IPushSender, FirebasePushSender>();
 
         return services;
     }

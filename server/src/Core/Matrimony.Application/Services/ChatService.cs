@@ -11,7 +11,8 @@ namespace Matrimony.Application.Services;
 // Private chat between connected members (a Conversation is created when an interest is accepted).
 // Rule: BOTH members need an active Premium plan to read or send messages.
 // Without it they only see that messages are waiting (unread count), never the text.
-public class ChatService(IAppDbContext db, IPresenceTracker presence, IProfileCardService profileCards, IPremiumAccessService premiumAccess) : IChatService
+public class ChatService(IAppDbContext db, IPresenceTracker presence, IProfileCardService profileCards, IPremiumAccessService premiumAccess,
+    INotificationService notifications) : IChatService
 {
     public const int MaxMessageLength = 2000;
     public const int MaxMessagesPerMinute = 30;   // simple anti-spam
@@ -125,6 +126,15 @@ public class ChatService(IAppDbContext db, IPresenceTracker presence, IProfileCa
         conversation.LastMessageAtUtc = message.SentAtUtc;
 
         await db.SaveChangesAsync();
+
+        // Push only when the other member is not connected right now (online members get it live through SignalR).
+        // Never the message text: it can show on a locked screen. Same tag per chat = one notification, not twenty.
+        if (!presence.IsOnline(access.OtherUserId))
+        {
+            await notifications.NotifyUserAsync(access.OtherUserId, new PushMessage(
+                "New message", "You have a new message on Hamsafar.",
+                $"/chat/{conversationId}", Tag: $"chat-{conversationId}"));
+        }
 
         var dto = new ChatMessageResponse(message.Id, conversationId, message.SenderProfileId, message.Body, message.SentAtUtc, null);
         return ServiceResult<SentMessageResult>.Ok(new SentMessageResult(dto, userId, access.OtherUserId));

@@ -23,7 +23,8 @@ export default function Navbar() {
   }
 
   return (
-    <header className="on-dark border-b border-white/10 bg-brand-900">
+    // Top padding = status bar height: in the Android app the navy reaches up behind the status bar (clock, battery)
+    <header className="on-dark border-b border-white/10 bg-brand-900 pt-[env(safe-area-inset-top)]">
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
         <Logo light />
 

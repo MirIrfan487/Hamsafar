@@ -16,3 +16,15 @@ dist/
 # OS
 Thumbs.db
 .DS_Store
+
+# Android app: machine-specific API address (copy from .env.android.example)
+.env.android
+
+# Firebase config of the Android app (download from the Firebase console)
+client/android/app/google-services.json
+
+# Android release signing (never commit keys or their passwords)
+client/android/keystore.properties
+*.jks
+*.keystore
+.env.android-release

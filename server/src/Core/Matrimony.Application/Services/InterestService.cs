@@ -10,7 +10,7 @@ namespace Matrimony.Application.Services;
 
 // Send / accept / reject / withdraw interests.
 // When an interest is accepted, a Conversation is created so the two members can chat (Phase 6).
-public class InterestService(IAppDbContext db, IProfileCardService profileCards) : IInterestService
+public class InterestService(IAppDbContext db, IProfileCardService profileCards, INotificationService notifications) : IInterestService
 {
     public const int DailySendLimit = 20;
 
@@ -68,6 +68,11 @@ public class InterestService(IAppDbContext db, IProfileCardService profileCards)
         }
         await db.SaveChangesAsync();
 
+        // Push to the receiver's phone. No name or details: it can show on a locked screen.
+        await notifications.NotifyProfileAsync(receiver.Id, new PushMessage(
+            "New interest", "Someone is interested in your profile. Open Hamsafar to see who.",
+            "/interests?tab=Received", Tag: "interests"));
+
         return ServiceResult<InterestResponse>.Ok(await ToResponseAsync(mine, me.Id));
     }
 
@@ -98,6 +103,15 @@ public class InterestService(IAppDbContext db, IProfileCardService profileCards)
         }
 
         await db.SaveChangesAsync();
+
+        // Only good news is pushed; a rejection is seen quietly on the Interests page
+        if (accept)
+        {
+            await notifications.NotifyProfileAsync(interest.SenderProfileId, new PushMessage(
+                "Interest accepted", "A member accepted your interest. You can now start a conversation.",
+                "/interests?tab=Connected", Tag: "interests"));
+        }
+
         return ServiceResult<InterestResponse>.Ok(await ToResponseAsync(interest, myId.Value));
     }
 

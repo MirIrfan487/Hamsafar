@@ -3,7 +3,8 @@ import Logo from './Logo'
 // Log in / Register are not repeated here — they are always in the navbar
 export default function Footer() {
   return (
-    <footer className="on-dark border-t border-gold/25 bg-dusk text-white/80">
+    // Bottom padding = gesture bar height: keeps the last links above the Android gesture bar in the app
+    <footer className="on-dark border-t border-gold/25 bg-dusk pb-[env(safe-area-inset-bottom)] text-white/80">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2">
         <div>
           <Logo light />
