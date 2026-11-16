@@ -272,6 +272,9 @@ Phase 9 in progress (testing and deployment).
 - Tests: server/tests/Matrimony.Tests (xUnit, in the solution under "tests"). Run "dotnet test" in server/ or
   Test Explorer. Helpers/TestDatabase = real AppDbContext on in-memory SQLite (EnsureCreated, never MatrimonyDb);
   NewContext() per "request". Helpers/TestData.AddMemberAsync, Helpers/FakeNotificationService (records pushes).
-  Done: AgeRulesTests, InterestServiceTests (21 tests). Next tests: chat + Premium, photo/contact privacy,
+  TestData also has AddPremiumAsync (seeded plan Id 1) and ConnectAsync (accepted interest + conversation);
+  Helpers/FakePresenceTracker (Online set).
+  Done: AgeRulesTests, InterestServiceTests, ChatServiceTests (38 tests). Next tests: photo/contact privacy,
   Razorpay verification (signature, amount, double activation), admin rules.
+  Leftover: Application/Services/PremiumAccess.cs only holds a "Delete this file" comment (safe to delete).
 Next: more tests, then deployment.
