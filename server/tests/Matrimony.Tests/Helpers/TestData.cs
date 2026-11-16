@@ -14,7 +14,8 @@ public static class TestData
         Gender gender,
         ProfileStatus status = ProfileStatus.Approved,
         bool suspended = false,
-        int age = 27)
+        int age = 27,
+        PhotoPrivacy photoPrivacy = PhotoPrivacy.AllMembers)
     {
         var n = Interlocked.Increment(ref _counter);
         var user = new AppUser
@@ -33,6 +34,7 @@ public static class TestData
             DateOfBirth = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-age),
             City = "Srinagar",
             Status = status,
+            PhotoPrivacy = photoPrivacy,
         };
         db.Users.Add(user);
         db.Profiles.Add(profile);
@@ -55,6 +57,16 @@ public static class TestData
             Status = status,
         });
         await db.SaveChangesAsync();
+    }
+
+    // A photo record for a profile (the file itself comes from FakePhotoStorage)
+    public static async Task<ProfilePhoto> AddPhotoAsync(AppDbContext db, Profile owner,
+        PhotoStatus status = PhotoStatus.Approved, bool isMain = true)
+    {
+        var photo = new ProfilePhoto { ProfileId = owner.Id, FilePath = $"{Guid.NewGuid():N}.jpg", Status = status, IsMain = isMain };
+        db.ProfilePhotos.Add(photo);
+        await db.SaveChangesAsync();
+        return photo;
     }
 
     // Two members whose interest was accepted, with their conversation (smaller profile id first).

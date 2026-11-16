@@ -276,7 +276,8 @@ Phase 9 in progress (testing and deployment).
   Helpers/FakePresenceTracker (Online set).
   Helpers/FakePaymentGateway (ApprovePayment, RemotePayments, signature sets; no internet). The test project
   also references Infrastructure: Infrastructure/RazorpaySignatureTests test the REAL HMAC checks.
-  Done: AgeRules, InterestService, ChatService, SubscriptionService, RazorpaySignature (67 tests).
-  Next tests: photo/contact privacy, admin rules.
+  Helpers/FakePhotoStorage (any file "opens"), TestData.AddPhotoAsync, AddMemberAsync(photoPrivacy:).
+  Done: AgeRules, InterestService, ChatService, SubscriptionService, RazorpaySignature, PhotoAccess,
+  ProfilePrivacy (103 tests). Next tests: admin rules.
   Leftover: Application/Services/PremiumAccess.cs only holds a "Delete this file" comment (safe to delete).
 Next: more tests, then deployment.
